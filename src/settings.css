@@ -1,0 +1,613 @@
+/* =========================================================
+   ANSAR TELECOM — SETTINGS
+========================================================= */
+
+.settings-page {
+  min-height: 100vh;
+  padding: 34px 32px 44px;
+  background: #f5f7fb;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.settings-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.settings-header > div:first-child {
+  min-width: 0;
+}
+
+.settings-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #3b6edc;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  color: #121b2d;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.settings-header p {
+  max-width: 650px;
+  margin-top: 8px;
+  color: #8a96a8;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   SAVE BUTTON
+========================================================= */
+
+.settings-save-btn {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex-shrink: 0;
+
+  padding: 0 19px;
+
+  border: 1px solid #2563eb;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #315ed3
+  );
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 18px rgba(37, 99, 235, 0.18);
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.settings-save-btn:hover {
+  background: linear-gradient(
+    135deg,
+    #1d4ed8,
+    #2855c7
+  );
+
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 11px 24px rgba(37, 99, 235, 0.24);
+}
+
+.settings-save-btn:active {
+  transform: translateY(0);
+}
+
+/* =========================================================
+   SUCCESS MESSAGE
+========================================================= */
+
+.settings-success-message {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  margin-bottom: 16px;
+  padding: 12px 15px;
+
+  border: 1px solid #ccebdd;
+  border-radius: 12px;
+
+  background: #f0faf6;
+  color: #14745a;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  animation: settingsMessageIn 0.25s ease;
+}
+
+@keyframes settingsMessageIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.settings-card {
+  min-width: 0;
+  padding: 22px;
+
+  border: 1px solid #e5eaf1;
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.03);
+}
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.settings-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 20px;
+}
+
+.settings-section-icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+}
+
+.settings-section-icon.blue {
+  color: #2563eb;
+  background: #eef4ff;
+}
+
+.settings-section-icon.orange {
+  color: #d97706;
+  background: #fff6e7;
+}
+
+.settings-section-icon.purple {
+  color: #7c3aed;
+  background: #f4efff;
+}
+
+.settings-section-icon.green {
+  color: #16805d;
+  background: #ebf9f3;
+}
+
+.settings-section-heading h2 {
+  margin: 0;
+
+  color: #273246;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.settings-section-heading p {
+  margin-top: 4px;
+
+  color: #98a2b3;
+
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   FORM GRID
+========================================================= */
+
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.settings-field {
+  min-width: 0;
+}
+
+.settings-field.full {
+  grid-column: 1 / -1;
+}
+
+.settings-field label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #536075;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.settings-field input,
+.settings-field select,
+.settings-field textarea {
+  width: 100%;
+
+  border: 1px solid #dfe5ed;
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #344054;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.settings-field input,
+.settings-field select {
+  height: 44px;
+  padding: 0 12px;
+}
+
+.settings-field textarea {
+  min-height: 90px;
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.settings-field input::placeholder,
+.settings-field textarea::placeholder {
+  color: #a7b0bf;
+}
+
+.settings-field input:focus,
+.settings-field select:focus,
+.settings-field textarea:focus {
+  border-color: #5b82e6;
+
+  box-shadow:
+    0 0 0 3px rgba(59, 110, 220, 0.08);
+}
+
+/* =========================================================
+   ICON INPUT
+========================================================= */
+
+.settings-input-icon {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+}
+
+.settings-input-icon svg {
+  position: absolute;
+  left: 12px;
+
+  z-index: 1;
+
+  color: #98a2b3;
+
+  pointer-events: none;
+}
+
+.settings-input-icon input {
+  padding-left: 37px;
+}
+
+/* =========================================================
+   JOB ID PREVIEW
+========================================================= */
+
+.settings-preview-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-height: 68px;
+  padding: 12px 14px;
+
+  border: 1px solid #dbe5f4;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f7faff,
+      #fbfdff
+    );
+}
+
+.settings-preview-box span {
+  color: #8a96a8;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.settings-preview-box strong {
+  margin-top: 5px;
+
+  color: #315fce;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size: 16px;
+  font-weight: 800;
+
+  letter-spacing: 0.02em;
+}
+
+/* =========================================================
+   TOGGLE LIST
+========================================================= */
+
+.settings-toggle-list {
+  display: grid;
+  gap: 10px;
+
+  margin-top: 17px;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  min-height: 66px;
+  padding: 13px 14px;
+
+  border: 1px solid #e8ecf2;
+  border-radius: 12px;
+
+  background: #fafbfd;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.settings-toggle-row:hover {
+  border-color: #dce3ed;
+  background: #ffffff;
+}
+
+.settings-toggle-row > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.settings-toggle-row strong {
+  color: #344054;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.settings-toggle-row span {
+  margin-top: 4px;
+
+  color: #98a2b3;
+
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   CUSTOM CHECKBOX TOGGLE
+========================================================= */
+
+.settings-toggle-row input[type="checkbox"] {
+  position: relative;
+
+  width: 42px;
+  height: 23px;
+
+  flex-shrink: 0;
+
+  margin: 0;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  border: 0;
+  border-radius: 999px;
+
+  outline: none;
+
+  background: #d8dee8;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.settings-toggle-row input[type="checkbox"]::after {
+  position: absolute;
+
+  top: 3px;
+  left: 3px;
+
+  width: 17px;
+  height: 17px;
+
+  content: "";
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 5px rgba(15, 23, 42, 0.16);
+
+  transition:
+    left 0.2s ease,
+    transform 0.2s ease;
+}
+
+.settings-toggle-row input[type="checkbox"]:checked {
+  background: #2563eb;
+}
+
+.settings-toggle-row input[type="checkbox"]:checked::after {
+  left: 22px;
+}
+
+.settings-toggle-row input[type="checkbox"]:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
+   RESPONSIVE TABLET
+========================================================= */
+
+@media (max-width: 1050px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .settings-page {
+    padding: 22px 16px 36px;
+  }
+
+  .settings-header {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .settings-eyebrow {
+    font-size: 10px;
+  }
+
+  .settings-header h1 {
+    font-size: 26px;
+  }
+
+  .settings-header p {
+    display: none;
+  }
+
+  .settings-save-btn {
+    height: 42px;
+    padding: 0 13px;
+
+    border-radius: 10px;
+
+    font-size: 11px;
+  }
+
+  .settings-save-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .settings-card {
+    padding: 17px;
+    border-radius: 15px;
+  }
+
+  .settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-field.full {
+    grid-column: auto;
+  }
+
+  .settings-toggle-row {
+    gap: 12px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 430px) {
+  .settings-header {
+    gap: 10px;
+  }
+
+  .settings-save-btn {
+    width: 42px;
+    min-width: 42px;
+    padding: 0;
+
+    font-size: 0;
+  }
+
+  .settings-save-btn svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .settings-section-heading {
+    align-items: flex-start;
+  }
+
+  .settings-section-icon {
+    width: 39px;
+    height: 39px;
+  }
+
+  .settings-toggle-row {
+    padding: 12px;
+  }
+}

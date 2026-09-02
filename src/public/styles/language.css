@@ -1,0 +1,315 @@
+/* =========================================================
+   ANSAR TELECOM — LANGUAGE SELECTOR
+========================================================= */
+
+.at-language {
+  position: relative;
+}
+
+/* =========================================================
+   DESKTOP BUTTON
+========================================================= */
+
+.at-language__button {
+  display: inline-flex;
+  min-height: 38px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border: 1px solid
+    rgba(18, 19, 15, 0.13);
+  border-radius: 999px;
+
+  color: #32332d;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.32
+  );
+
+  font: inherit;
+  font-size: 8px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.at-language__button:hover {
+  border-color:
+    rgba(18, 19, 15, 0.28);
+
+  background: #fff;
+
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   DROPDOWN
+========================================================= */
+
+.at-language__dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+
+  z-index: 1000;
+
+  width: 205px;
+
+  padding: 10px;
+
+  border:
+    1px solid
+    rgba(18, 19, 15, 0.1);
+
+  border-radius: 15px;
+
+  background: #f7f4ed;
+
+  box-shadow:
+    0 22px 60px
+    rgba(18, 19, 15, 0.14);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform:
+    translateY(-7px)
+    scale(0.98);
+
+  transform-origin:
+    top right;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease;
+}
+
+.at-language__dropdown--open {
+  opacity: 1;
+  visibility: visible;
+
+  transform:
+    translateY(0)
+    scale(1);
+
+  pointer-events: auto;
+}
+
+.at-language__label {
+  display: block;
+
+  padding: 8px 10px 10px;
+
+  color: #929188;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.13em;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   LANGUAGE OPTIONS
+========================================================= */
+
+.at-language__option {
+  display: flex;
+
+  width: 100%;
+  min-height: 52px;
+
+  padding: 8px 10px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  border: 0;
+  border-radius: 10px;
+
+  color: #32332d;
+  background: transparent;
+
+  font: inherit;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease;
+}
+
+.at-language__option:hover {
+  background:
+    rgba(18, 19, 15, 0.05);
+}
+
+.at-language__option--active {
+  background: #12130f;
+
+  color: #fff;
+}
+
+.at-language__option--active:hover {
+  background: #12130f;
+}
+
+.at-language__option > span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.at-language__option strong {
+  display: grid;
+
+  width: 29px;
+  height: 29px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: #12130f;
+  background: #f4c400;
+
+  font-size: 8px;
+}
+
+.at-language__option small {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   MOBILE LANGUAGE
+========================================================= */
+
+.at-mobile-language {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .at-mobile-language {
+    display: block;
+
+    margin:
+      5px 0
+      25px;
+
+    padding:
+      18px 0
+      23px;
+
+    border-top:
+      1px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.09
+      );
+
+    border-bottom:
+      1px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.09
+      );
+  }
+
+  .at-mobile-language__heading {
+    display: flex;
+
+    margin-bottom: 12px;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #777871;
+
+    font-size: 7px;
+    font-weight: 700;
+
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+  }
+
+  .at-mobile-language__options {
+    display: grid;
+
+    grid-template-columns:
+      1fr 1fr;
+
+    gap: 7px;
+  }
+
+  .at-mobile-language__option {
+    display: flex;
+
+    min-height: 44px;
+
+    padding: 0 13px;
+
+    align-items: center;
+    justify-content: space-between;
+
+    border:
+      1px solid
+      rgba(
+        255,
+        255,
+        255,
+        0.12
+      );
+
+    border-radius: 8px;
+
+    color: #9c9d96;
+    background: transparent;
+
+    font: inherit;
+    font-size: 9px;
+    font-weight: 600;
+
+    cursor: pointer;
+  }
+
+  .at-mobile-language__option--active {
+    border-color: #f4c400;
+
+    color: #12130f;
+    background: #f4c400;
+  }
+}
+
+/* =========================================================
+   HIDE DESKTOP LANGUAGE ON MOBILE NAVBAR
+========================================================= */
+
+@media (max-width: 900px) {
+  .at-public-nav__actions
+    .at-language {
+    display: none;
+  }
+}

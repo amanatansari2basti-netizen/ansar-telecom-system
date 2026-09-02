@@ -1,0 +1,571 @@
+/* =========================================================
+   ANSAR TELECOM — INSIDE THE REPAIR
+   CINEMATIC SCROLL STORY
+========================================================= */
+
+.at-repair-story {
+  position: relative;
+  z-index: 2;
+  height: 560vh;
+  color: #f4f2ed;
+  background: #030405;
+}
+
+.at-repair-story__sticky {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  min-height: 700px;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 68% 48%,
+      rgba(45, 115, 134, 0.08),
+      transparent 29%
+    ),
+    #030405;
+}
+
+.at-repair-story__background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.at-repair-story__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.23;
+  background-image:
+    linear-gradient(
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px
+    );
+  background-size: 85px 85px;
+  mask-image:
+    radial-gradient(
+      circle at 67% 50%,
+      black,
+      transparent 73%
+    );
+}
+
+.at-repair-story__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.at-repair-story__glow--one {
+  top: 18%;
+  right: 3%;
+  width: 520px;
+  height: 520px;
+  background:
+    radial-gradient(
+      circle,
+      rgba(87, 219, 244, 0.08),
+      transparent 70%
+    );
+}
+
+.at-repair-story__glow--two {
+  bottom: -240px;
+  left: -180px;
+  width: 560px;
+  height: 560px;
+  background:
+    radial-gradient(
+      circle,
+      rgba(96, 119, 255, 0.04),
+      transparent 68%
+    );
+}
+
+.at-repair-story__topbar {
+  position: absolute;
+  z-index: 10;
+  top: 40px;
+  right: 5vw;
+  left: 5vw;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.at-repair-story__topbar > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.at-repair-story__topbar span {
+  color: rgba(222, 231, 234, 0.28);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+}
+
+.at-repair-story__topbar strong {
+  color: rgba(229, 237, 239, 0.58);
+  font-family: "Manrope", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.at-repair-story__top-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(210, 224, 228, 0.4);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.at-repair-story__top-status i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #75eaff;
+  box-shadow:
+    0 0 15px rgba(117, 234, 255, 0.8);
+}
+
+.at-repair-story__copy {
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  left: 7vw;
+  width: min(37vw, 560px);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.at-repair-story__copy-inner {
+  animation:
+    atStoryCopyEnter 0.62s
+    cubic-bezier(0.16, 1, 0.3, 1)
+    both;
+}
+
+.at-repair-story__stage-index {
+  display: flex;
+  width: 160px;
+  margin-bottom: 38px;
+  align-items: center;
+  gap: 10px;
+}
+
+.at-repair-story__stage-index span {
+  color: rgba(217, 229, 232, 0.36);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.at-repair-story__stage-index span:first-child {
+  color: #8ce9fa;
+}
+
+.at-repair-story__stage-index div {
+  width: 70px;
+  height: 1px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(116, 232, 252, 0.45),
+      rgba(255, 255, 255, 0.04)
+    );
+}
+
+.at-repair-story__stage-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 25px;
+  place-items: center;
+  border: 1px solid rgba(124, 229, 247, 0.11);
+  border-radius: 14px;
+  color: #87e5f5;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(116, 229, 248, 0.06),
+      rgba(255, 255, 255, 0.01)
+    );
+}
+
+.at-repair-story__kicker {
+  display: block;
+  margin-bottom: 17px;
+  color: #73d7e8;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.at-repair-story__copy h2 {
+  max-width: 610px;
+  margin: 0;
+  color: #efede8;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(42px, 4.6vw, 76px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.at-repair-story__copy p {
+  max-width: 430px;
+  margin: 26px 0 0;
+  color: rgba(206, 217, 221, 0.43);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.at-repair-story__visual {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  right: 2vw;
+  width: 58vw;
+  max-width: 900px;
+  height: 86vh;
+  min-height: 640px;
+  transform: translateY(-50%);
+}
+
+.at-repair-story__visual canvas {
+  position: absolute !important;
+  z-index: 3;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.at-repair-story__visual-ring {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(117, 234, 255, 0.05);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.at-repair-story__visual-ring--one {
+  width: min(45vw, 700px);
+  aspect-ratio: 1;
+}
+
+.at-repair-story__visual-ring--two {
+  width: min(57vw, 850px);
+  aspect-ratio: 1;
+  border-color: rgba(255, 255, 255, 0.02);
+}
+
+.at-repair-story__visual-ring--two::before {
+  position: absolute;
+  top: 16%;
+  left: 14%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  content: "";
+  background: #75eaff;
+  box-shadow:
+    0 0 16px rgba(117, 234, 255, 0.75);
+}
+
+.at-repair-story__progress {
+  position: absolute;
+  z-index: 10;
+  right: 5vw;
+  bottom: 48px;
+  left: 5vw;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.at-repair-story__progress-item {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 9px;
+}
+
+.at-repair-story__progress-item span {
+  color: rgba(223, 232, 235, 0.17);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  transition:
+    color 0.35s ease;
+}
+
+.at-repair-story__progress-item > div {
+  position: relative;
+  height: 1px;
+  overflow: hidden;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.at-repair-story__progress-item > div i {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(117, 234, 255, 0.7),
+      rgba(117, 234, 255, 0.14)
+    );
+  transition:
+    transform 0.5s
+    cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.at-repair-story__progress-item--active span {
+  color: #8fe9f8;
+}
+
+.at-repair-story__progress-item--active
+  > div
+  i,
+.at-repair-story__progress-item--complete
+  > div
+  i {
+  transform: scaleX(1);
+}
+
+.at-repair-story__technical {
+  position: absolute;
+  z-index: 10;
+  right: 5vw;
+  bottom: 24px;
+  left: 5vw;
+  display: flex;
+  justify-content: space-between;
+  color: rgba(215, 228, 232, 0.16);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+  pointer-events: none;
+}
+
+@keyframes atStoryCopyEnter {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+    filter: blur(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 1050px) {
+  .at-repair-story__copy {
+    left: 5vw;
+    width: 39vw;
+  }
+
+  .at-repair-story__visual {
+    right: -3vw;
+    width: 62vw;
+  }
+
+  .at-repair-story__copy h2 {
+    font-size: clamp(
+      38px,
+      4.8vw,
+      62px
+    );
+  }
+}
+
+@media (max-width: 820px) {
+  .at-repair-story {
+    height: 500vh;
+  }
+
+  .at-repair-story__sticky {
+    min-height: 650px;
+  }
+
+  .at-repair-story__topbar {
+    top: 24px;
+    right: 22px;
+    left: 22px;
+  }
+
+  .at-repair-story__topbar strong {
+    font-size: 7px;
+  }
+
+  .at-repair-story__copy {
+    top: auto;
+    right: 22px;
+    bottom: 105px;
+    left: 22px;
+    width: auto;
+    transform: none;
+  }
+
+  .at-repair-story__stage-index {
+    margin-bottom: 14px;
+  }
+
+  .at-repair-story__stage-icon {
+    display: none;
+  }
+
+  .at-repair-story__kicker {
+    margin-bottom: 9px;
+    font-size: 7px;
+  }
+
+  .at-repair-story__copy h2 {
+    max-width: 470px;
+    font-size: clamp(
+      34px,
+      8vw,
+      55px
+    );
+  }
+
+  .at-repair-story__copy p {
+    max-width: 500px;
+    margin-top: 13px;
+    font-size: 11px;
+    line-height: 1.65;
+  }
+
+  .at-repair-story__visual {
+    top: 39%;
+    right: 50%;
+    width: 100vw;
+    height: 63vh;
+    min-height: 480px;
+    transform:
+      translate(50%, -50%);
+  }
+
+  .at-repair-story__visual-ring--one {
+    width: 66vw;
+  }
+
+  .at-repair-story__visual-ring--two {
+    width: 88vw;
+  }
+
+  .at-repair-story__progress {
+    right: 22px;
+    bottom: 51px;
+    left: 22px;
+  }
+
+  .at-repair-story__technical {
+    right: 22px;
+    bottom: 25px;
+    left: 22px;
+  }
+}
+
+@media (max-width: 520px) {
+  .at-repair-story {
+    height: 470vh;
+  }
+
+  .at-repair-story__sticky {
+    min-height: 600px;
+  }
+
+  .at-repair-story__top-status {
+    display: none;
+  }
+
+  .at-repair-story__visual {
+    top: 38%;
+    height: 55vh;
+    min-height: 420px;
+  }
+
+  .at-repair-story__copy {
+    bottom: 98px;
+  }
+
+  .at-repair-story__stage-index {
+    width: 125px;
+  }
+
+  .at-repair-story__stage-index div {
+    width: 48px;
+  }
+
+  .at-repair-story__copy h2 {
+    font-size: clamp(
+      31px,
+      10vw,
+      46px
+    );
+  }
+
+  .at-repair-story__copy p {
+    max-width: 390px;
+    font-size: 10px;
+  }
+
+  .at-repair-story__progress-item {
+    gap: 4px;
+  }
+
+  .at-repair-story__progress-item span {
+    font-size: 5px;
+  }
+}
+
+@media (max-width: 390px) {
+  .at-repair-story__copy h2 {
+    font-size: 30px;
+  }
+
+  .at-repair-story__copy p {
+    font-size: 9px;
+  }
+
+  .at-repair-story__visual {
+    top: 36%;
+  }
+
+  .at-repair-story__progress-item span {
+    display: none;
+  }
+
+  .at-repair-story__progress-item {
+    margin-right: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-repair-story__copy-inner {
+    animation: none;
+  }
+}

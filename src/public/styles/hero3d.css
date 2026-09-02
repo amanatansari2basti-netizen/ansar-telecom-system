@@ -1,0 +1,297 @@
+/* =========================================================
+   ANSAR TELECOM — HERO 3D PHONE
+========================================================= */
+
+.at-hero3d {
+  position: relative;
+  width: min(48vw, 720px);
+  height: min(82vh, 820px);
+  min-height: 610px;
+  isolation: isolate;
+}
+
+.at-hero3d__canvas {
+  position: absolute !important;
+  z-index: 5;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: pan-y;
+}
+
+.at-hero3d__backlight {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 68%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      rgba(90, 218, 244, 0.18) 0%,
+      rgba(62, 139, 162, 0.08) 28%,
+      rgba(42, 80, 95, 0.035) 50%,
+      transparent 72%
+    );
+  filter: blur(26px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.at-hero3d__ring {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(143, 229, 247, 0.07);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.at-hero3d__ring--one {
+  width: 64%;
+  aspect-ratio: 1;
+  animation: atHeroRingPulse 5s ease-in-out infinite;
+}
+
+.at-hero3d__ring--two {
+  width: 82%;
+  aspect-ratio: 1;
+  border-color: rgba(255, 255, 255, 0.035);
+  animation:
+    atHeroRingRotate 24s linear infinite;
+}
+
+.at-hero3d__ring--two::before,
+.at-hero3d__ring--two::after {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  content: "";
+  background: #86e8fa;
+  box-shadow:
+    0 0 18px rgba(134, 232, 250, 0.72);
+}
+
+.at-hero3d__ring--two::before {
+  top: 12%;
+  left: 20%;
+}
+
+.at-hero3d__ring--two::after {
+  right: 9%;
+  bottom: 24%;
+  opacity: 0.45;
+}
+
+.at-hero3d__ring--three {
+  width: 102%;
+  aspect-ratio: 1;
+  border-color: rgba(255, 255, 255, 0.02);
+}
+
+.at-hero3d__hud {
+  position: absolute;
+  z-index: 8;
+  display: flex;
+  padding: 10px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 10px;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(16, 20, 23, 0.83),
+      rgba(5, 7, 9, 0.58)
+    );
+  box-shadow:
+    0 14px 45px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px);
+}
+
+.at-hero3d__hud span {
+  color: rgba(218, 230, 235, 0.38);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.17em;
+}
+
+.at-hero3d__hud strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ccebf0;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.at-hero3d__hud strong i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #75eaff;
+  box-shadow:
+    0 0 12px rgba(117, 234, 255, 0.85);
+}
+
+.at-hero3d__hud--top {
+  top: 19%;
+  right: 1%;
+}
+
+.at-hero3d__hud--left {
+  top: 54%;
+  left: 2%;
+}
+
+.at-hero3d__hud--right {
+  right: 0;
+  bottom: 25%;
+}
+
+.at-hero3d__technical {
+  position: absolute;
+  z-index: 8;
+  right: 5%;
+  bottom: 10%;
+  left: 5%;
+  display: flex;
+  justify-content: space-between;
+  color: rgba(196, 215, 222, 0.22);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  pointer-events: none;
+}
+
+@keyframes atHeroRingPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform:
+      translate(-50%, -50%)
+      scale(0.96);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform:
+      translate(-50%, -50%)
+      scale(1.04);
+  }
+}
+
+@keyframes atHeroRingRotate {
+  from {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+}
+
+@media (max-width: 1100px) {
+  .at-hero3d {
+    width: min(48vw, 620px);
+    height: 670px;
+    min-height: 570px;
+  }
+}
+
+@media (max-width: 900px) {
+  .at-hero3d {
+    width: min(100%, 620px);
+    height: 610px;
+    min-height: 560px;
+    margin: 10px auto 0;
+  }
+
+  .at-hero3d__hud--top {
+    right: 8%;
+  }
+
+  .at-hero3d__hud--left {
+    left: 8%;
+  }
+
+  .at-hero3d__hud--right {
+    right: 7%;
+  }
+}
+
+@media (max-width: 600px) {
+  .at-hero3d {
+    width: calc(100vw - 20px);
+    height: 520px;
+    min-height: 500px;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .at-hero3d__ring--one {
+    width: 74%;
+  }
+
+  .at-hero3d__ring--two {
+    width: 94%;
+  }
+
+  .at-hero3d__ring--three {
+    width: 112%;
+  }
+
+  .at-hero3d__hud {
+    padding: 8px 10px;
+  }
+
+  .at-hero3d__hud--top {
+    top: 15%;
+    right: 1%;
+  }
+
+  .at-hero3d__hud--left {
+    top: 56%;
+    left: 1%;
+  }
+
+  .at-hero3d__hud--right {
+    right: 1%;
+    bottom: 20%;
+  }
+
+  .at-hero3d__technical {
+    right: 2%;
+    bottom: 5%;
+    left: 2%;
+  }
+}
+
+@media (max-width: 400px) {
+  .at-hero3d {
+    height: 470px;
+    min-height: 450px;
+  }
+
+  .at-hero3d__hud--left {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-hero3d__ring {
+    animation: none;
+  }
+}

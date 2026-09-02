@@ -1,0 +1,630 @@
+.delivery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  background: rgba(5, 10, 18, 0.58);
+  backdrop-filter: blur(8px);
+
+  overflow-y: auto;
+}
+
+.delivery-modal {
+  width: min(680px, 100%);
+  max-height: calc(100vh - 40px);
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 22px;
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.22);
+
+  animation:
+    deliveryEnter 0.22s ease;
+}
+
+@keyframes deliveryEnter {
+  from {
+    opacity: 0;
+    transform:
+      translateY(12px)
+      scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* HEADER */
+
+.delivery-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding: 22px;
+
+  border-bottom:
+    1px solid #edf1f5;
+}
+
+.delivery-title {
+  display: flex;
+  gap: 12px;
+}
+
+.delivery-title-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 13px;
+
+  background: #111827;
+  color: white;
+}
+
+.delivery-title span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #8b95a5;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.09em;
+}
+
+.delivery-title h2 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 20px;
+  line-height: 1.15;
+}
+
+.delivery-title p {
+  margin:
+    5px 0 0;
+
+  color: #7c8798;
+
+  font-size: 11px;
+}
+
+.delivery-close {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #e5e9ef;
+  border-radius: 10px;
+
+  background: #fff;
+  color: #596579;
+
+  cursor: pointer;
+}
+
+/* JOB */
+
+.delivery-job {
+  margin: 18px 22px 0;
+
+  padding: 14px;
+
+  border: 1px solid #e9edf2;
+  border-radius: 14px;
+
+  background: #f9fafb;
+}
+
+.delivery-job-id {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding-bottom: 11px;
+
+  border-bottom:
+    1px solid #e7ebf0;
+}
+
+.delivery-job-id span {
+  color: #8b95a5;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.delivery-job-id strong {
+  color: #172033;
+
+  font-size: 12px;
+}
+
+.delivery-job-data {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+.delivery-job-data > div {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 8px;
+}
+
+.delivery-job-data svg {
+  margin-top: 3px;
+
+  color: #64748b;
+}
+
+.delivery-job-data span {
+  min-width: 0;
+}
+
+.delivery-job-data small,
+.delivery-job-data strong,
+.delivery-job-data em {
+  display: block;
+}
+
+.delivery-job-data small {
+  margin-bottom: 2px;
+
+  color: #8b95a5;
+
+  font-size: 9px;
+}
+
+.delivery-job-data strong {
+  color: #253044;
+
+  font-size: 11px;
+}
+
+.delivery-job-data em {
+  margin-top: 2px;
+
+  color: #7c8798;
+
+  font-size: 9px;
+  font-style: normal;
+}
+
+/* SECTION */
+
+.delivery-section {
+  margin: 16px 22px 0;
+
+  padding: 15px;
+
+  border: 1px solid #edf1f5;
+  border-radius: 14px;
+}
+
+.delivery-section-title {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-bottom: 13px;
+}
+
+.delivery-section-title svg {
+  margin-top: 1px;
+
+  color: #526176;
+}
+
+.delivery-section-title strong,
+.delivery-section-title span {
+  display: block;
+}
+
+.delivery-section-title strong {
+  color: #273247;
+
+  font-size: 12px;
+}
+
+.delivery-section-title span {
+  margin-top: 2px;
+
+  color: #8b95a5;
+
+  font-size: 9px;
+}
+
+/* MONEY */
+
+.delivery-money-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 8px;
+}
+
+.delivery-money-grid > div {
+  padding: 11px;
+
+  border-radius: 10px;
+
+  background: #f7f9fb;
+}
+
+.delivery-money-grid span,
+.delivery-money-grid strong {
+  display: block;
+}
+
+.delivery-money-grid span {
+  margin-bottom: 4px;
+
+  color: #8b95a5;
+
+  font-size: 9px;
+}
+
+.delivery-money-grid strong {
+  color: #273247;
+
+  font-size: 13px;
+}
+
+.delivery-money-grid
+.balance-due {
+  background: #fff8eb;
+}
+
+.delivery-money-grid
+.balance-due strong {
+  color: #a46400;
+}
+
+.delivery-money-grid
+.balance-paid {
+  background: #effaf5;
+}
+
+.delivery-money-grid
+.balance-paid strong {
+  color: #147653;
+}
+
+/* FIELD */
+
+.delivery-field {
+  position: relative;
+
+  margin-top: 12px;
+}
+
+.delivery-field label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #596579;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.delivery-amount-input {
+  position: relative;
+}
+
+.delivery-amount-input svg {
+  position: absolute;
+
+  left: 11px;
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #64748b;
+}
+
+.delivery-amount-input input {
+  width: 100%;
+  height: 42px;
+
+  padding:
+    0 12px 0 34px;
+
+  border: 1px solid #dfe5eb;
+  border-radius: 10px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.delivery-amount-input
+input:focus,
+.delivery-field textarea:focus {
+  border-color: #9ba8b8;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(100, 116, 139, 0.08);
+}
+
+.delivery-full-btn {
+  margin-top: 7px;
+
+  padding: 6px 9px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: #eef2f6;
+  color: #455468;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.delivery-field textarea {
+  width: 100%;
+  min-height: 76px;
+
+  padding: 10px;
+
+  resize: vertical;
+
+  border: 1px solid #dfe5eb;
+  border-radius: 10px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 11px;
+}
+
+/* OPTIONS */
+
+.delivery-options {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+.delivery-options button {
+  min-height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 0 11px;
+
+  border: 1px solid #dfe5eb;
+  border-radius: 9px;
+
+  background: #fff;
+  color: #596579;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    0.16s ease;
+}
+
+.delivery-options
+button:hover {
+  border-color: #bcc6d2;
+}
+
+.delivery-options
+button.active {
+  border-color: #172033;
+
+  background: #172033;
+  color: #fff;
+}
+
+/* PAID */
+
+.delivery-paid-banner {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin: 16px 22px 0;
+
+  padding: 12px 14px;
+
+  border: 1px solid #d6eee3;
+  border-radius: 12px;
+
+  background: #f2fbf7;
+  color: #147653;
+}
+
+.delivery-paid-banner strong,
+.delivery-paid-banner span {
+  display: block;
+}
+
+.delivery-paid-banner strong {
+  font-size: 11px;
+}
+
+.delivery-paid-banner span {
+  margin-top: 2px;
+
+  font-size: 9px;
+}
+
+/* ERROR */
+
+.delivery-error {
+  margin: 14px 22px 0;
+
+  padding: 10px 12px;
+
+  border: 1px solid #f0caca;
+  border-radius: 9px;
+
+  background: #fff5f5;
+  color: #b42318;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* FOOTER */
+
+.delivery-footer {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 18px;
+
+  padding: 16px 22px 20px;
+
+  border-top:
+    1px solid #edf1f5;
+}
+
+.delivery-cancel,
+.delivery-confirm {
+  min-height: 39px;
+
+  padding: 0 14px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.delivery-cancel {
+  border: 1px solid #dfe5eb;
+
+  background: #fff;
+  color: #596579;
+}
+
+.delivery-confirm {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  border: 0;
+
+  background: #172033;
+  color: #fff;
+}
+
+.delivery-confirm:disabled,
+.delivery-cancel:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+/* MOBILE */
+
+@media (max-width: 620px) {
+  .delivery-overlay {
+    padding: 10px;
+  }
+
+  .delivery-modal {
+    max-height:
+      calc(100vh - 20px);
+
+    border-radius: 18px;
+  }
+
+  .delivery-header {
+    padding: 17px;
+  }
+
+  .delivery-job,
+  .delivery-section,
+  .delivery-paid-banner {
+    margin-left: 15px;
+    margin-right: 15px;
+  }
+
+  .delivery-job-data {
+    grid-template-columns:
+      1fr;
+  }
+
+  .delivery-money-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .delivery-footer {
+    padding:
+      14px 15px 17px;
+  }
+
+  .delivery-footer button {
+    flex: 1;
+  }
+}

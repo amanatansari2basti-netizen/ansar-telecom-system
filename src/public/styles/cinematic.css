@@ -1,0 +1,1017 @@
+/* =========================================================
+   ANSAR TELECOM
+   PREMIUM CENTERED VIDEO INTRO
+========================================================= */
+
+.at-cinematic-video-intro {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+
+  overflow: hidden;
+
+  background: #020506;
+
+  z-index: 99999;
+
+  isolation: isolate;
+
+  font-family:
+    Inter,
+    Manrope,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* =========================================================
+   VIDEO
+========================================================= */
+
+.at-intro-video {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  z-index: 1;
+
+  opacity: 0;
+
+  transform: scale(1.015);
+
+  transition:
+    opacity 0.8s ease,
+    transform 1.4s ease;
+
+  will-change:
+    transform,
+    filter,
+    opacity;
+}
+
+.at-cinematic-video-intro.is-ready
+  .at-intro-video {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* =========================================================
+   VIDEO OVERLAYS
+========================================================= */
+
+.at-intro-vignette {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.02) 22%,
+      rgba(0, 0, 0, 0.02) 66%,
+      rgba(0, 0, 0, 0.34) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.16),
+      transparent 22%,
+      transparent 78%,
+      rgba(0, 0, 0, 0.16)
+    );
+}
+
+/*
+  Center text ke peeche bahut subtle shadow.
+  Video visible rahegi.
+*/
+
+.at-intro-center-focus {
+  position: absolute;
+
+  z-index: 3;
+
+  pointer-events: none;
+
+  left: 50%;
+  top: 52%;
+
+  width: min(720px, 75vw);
+  height: min(580px, 75vh);
+
+  transform: translate(-50%, -50%);
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 8, 10, 0.27) 0%,
+    rgba(0, 8, 10, 0.14) 34%,
+    rgba(0, 0, 0, 0.04) 58%,
+    transparent 75%
+  );
+
+  filter: blur(12px);
+}
+
+/* =========================================================
+   VERY SUBTLE GRAIN
+========================================================= */
+
+.at-intro-grain {
+  position: absolute;
+
+  inset: -50%;
+
+  width: 200%;
+  height: 200%;
+
+  z-index: 4;
+
+  opacity: 0.014;
+
+  pointer-events: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+
+  animation: atIntroGrain 0.35s steps(2)
+    infinite;
+}
+
+@keyframes atIntroGrain {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-1.5%, 1%);
+  }
+
+  50% {
+    transform: translate(1%, -1.5%);
+  }
+
+  75% {
+    transform: translate(1.5%, 1.5%);
+  }
+
+  100% {
+    transform: translate(-1%, 0.5%);
+  }
+}
+
+/* =========================================================
+   SOUND BUTTON
+========================================================= */
+
+.at-intro-sound {
+  position: absolute;
+
+  top: max(
+    22px,
+    calc(
+      14px +
+        env(safe-area-inset-top)
+    )
+  );
+
+  right: clamp(20px, 4vw, 58px);
+
+  z-index: 20;
+
+  height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  padding: 0 16px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.22);
+
+  border-radius: 999px;
+
+  color: rgba(255, 255, 255, 0.92);
+
+  background:
+    rgba(3, 11, 13, 0.38);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.08),
+    0 12px 30px
+      rgba(0, 0, 0, 0.14);
+
+  cursor: pointer;
+
+  font: inherit;
+
+  font-size: 11px;
+  font-weight: 650;
+
+  letter-spacing: 0.035em;
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.at-intro-sound:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    rgba(255, 255, 255, 0.36);
+
+  background:
+    rgba(3, 11, 13, 0.58);
+}
+
+/* =========================================================
+   CENTER CONTENT
+========================================================= */
+
+.at-intro-center {
+  position: absolute;
+
+  left: 50%;
+  top: 52%;
+
+  z-index: 10;
+
+  width: min(92vw, 900px);
+
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  text-align: center;
+
+  color: #fff;
+
+  perspective: 1000px;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   EYEBROW
+========================================================= */
+
+.at-center-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 13px;
+
+  margin-bottom: clamp(
+    13px,
+    1.8vw,
+    22px
+  );
+
+  color: rgba(255, 255, 255, 0.84);
+
+  font-size: clamp(
+    8px,
+    0.72vw,
+    11px
+  );
+
+  font-weight: 700;
+
+  letter-spacing: 0.22em;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.at-center-eyebrow-line {
+  display: block;
+
+  width: clamp(22px, 3vw, 42px);
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.75)
+  );
+}
+
+.at-center-eyebrow-line:last-child {
+  transform: rotate(180deg);
+}
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.at-center-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  line-height: 0.83;
+
+  text-transform: uppercase;
+
+  user-select: none;
+}
+
+.at-brand-line {
+  display: flex;
+  justify-content: center;
+
+  transform-style: preserve-3d;
+
+  white-space: nowrap;
+}
+
+/* ANSAR */
+
+.at-brand-line-ansar {
+  color: #ffffff;
+
+  font-size: clamp(
+    68px,
+    8.4vw,
+    138px
+  );
+
+  font-weight: 800;
+
+  letter-spacing: -0.065em;
+
+  text-shadow:
+    0 3px 18px
+      rgba(0, 0, 0, 0.24),
+    0 15px 45px
+      rgba(0, 0, 0, 0.18);
+}
+
+/* TELECOM */
+
+.at-brand-line-telecom {
+  margin-top: clamp(
+    12px,
+    1.5vw,
+    22px
+  );
+
+  color: rgba(255, 255, 255, 0.86);
+
+  font-size: clamp(
+    36px,
+    4.7vw,
+    76px
+  );
+
+  font-weight: 400;
+
+  letter-spacing: 0.115em;
+
+  text-shadow:
+    0 3px 20px
+      rgba(0, 0, 0, 0.32);
+}
+
+.at-brand-letter {
+  position: relative;
+
+  display: inline-block;
+
+  transform-origin: 50% 100%;
+
+  will-change:
+    transform,
+    opacity,
+    filter;
+}
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.at-center-divider {
+  position: relative;
+
+  width: min(320px, 42vw);
+  height: 1px;
+
+  margin-top: clamp(
+    24px,
+    3vw,
+    38px
+  );
+
+  transform-origin: center;
+}
+
+.at-center-divider::before,
+.at-center-divider::after {
+  content: "";
+
+  position: absolute;
+  top: 50%;
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  transform: translateY(-50%);
+
+  background:
+    rgba(255, 255, 255, 0.7);
+
+  box-shadow:
+    0 0 12px
+      rgba(130, 232, 239, 0.5);
+}
+
+.at-center-divider::before {
+  left: 0;
+}
+
+.at-center-divider::after {
+  right: 0;
+}
+
+.at-center-divider span {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  top: 50%;
+
+  height: 1px;
+
+  transform: translateY(-50%);
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    rgba(170, 240, 244, 0.85),
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+}
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+.at-center-location {
+  margin-top: clamp(
+    16px,
+    2vw,
+    22px
+  );
+
+  color: rgba(255, 255, 255, 0.88);
+
+  font-size: clamp(
+    10px,
+    1vw,
+    14px
+  );
+
+  font-weight: 650;
+
+  letter-spacing: 0.24em;
+
+  text-transform: uppercase;
+
+  text-shadow:
+    0 3px 15px
+      rgba(0, 0, 0, 0.45);
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   ENTER WEBSITE BUTTON
+========================================================= */
+
+.at-center-enter {
+  pointer-events: auto;
+
+  position: relative;
+
+  min-width: clamp(
+    190px,
+    16vw,
+    230px
+  );
+
+  height: clamp(
+    54px,
+    4.5vw,
+    62px
+  );
+
+  margin-top: clamp(
+    25px,
+    3vw,
+    38px
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding:
+    5px
+    6px
+    5px
+    clamp(20px, 2vw, 28px);
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.75);
+
+  border-radius: 999px;
+
+  color: #091011;
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  box-shadow:
+    0 14px 40px
+      rgba(0, 0, 0, 0.22),
+    0 0 0 0
+      rgba(130, 232, 239, 0),
+    inset 0 1px 0
+      rgba(255, 255, 255, 1);
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  font: inherit;
+
+  transition:
+    transform 0.32s
+      cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.32s ease,
+    background 0.32s ease;
+
+  will-change:
+    transform,
+    opacity,
+    filter;
+}
+
+.at-center-enter::before {
+  content: "";
+
+  position: absolute;
+
+  top: -100%;
+  left: -45%;
+
+  width: 35%;
+  height: 300%;
+
+  transform: rotate(20deg);
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.85),
+    transparent
+  );
+
+  opacity: 0;
+
+  transition:
+    left 0.7s ease,
+    opacity 0.3s ease;
+}
+
+.at-center-enter:hover {
+  transform:
+    translateY(-3px)
+    scale(1.015);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 18px 48px
+      rgba(0, 0, 0, 0.28),
+    0 0 30px
+      rgba(121, 226, 234, 0.16),
+    inset 0 1px 0 #fff;
+}
+
+.at-center-enter:hover::before {
+  left: 110%;
+  opacity: 1;
+}
+
+.at-center-enter:active {
+  transform: scale(0.98);
+}
+
+.at-center-enter:disabled {
+  pointer-events: none;
+}
+
+.at-center-enter-label {
+  position: relative;
+
+  z-index: 2;
+
+  font-size: clamp(
+    11px,
+    0.9vw,
+    13px
+  );
+
+  font-weight: 750;
+
+  letter-spacing: 0.02em;
+}
+
+.at-center-enter-arrow {
+  position: relative;
+
+  z-index: 2;
+
+  width: clamp(
+    42px,
+    3.5vw,
+    48px
+  );
+
+  height: clamp(
+    42px,
+    3.5vw,
+    48px
+  );
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: #fff;
+
+  background: #091011;
+
+  transition:
+    transform 0.32s
+      cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease;
+}
+
+.at-center-enter:hover
+  .at-center-enter-arrow {
+  transform:
+    translateX(2px)
+    rotate(-4deg);
+
+  background: #0c272a;
+}
+
+/* =========================================================
+   BOTTOM HINT
+========================================================= */
+
+.at-center-hint {
+  margin-top: 14px;
+
+  color: rgba(255, 255, 255, 0.42);
+
+  font-size: 8px;
+  font-weight: 650;
+
+  letter-spacing: 0.19em;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.at-intro-loader {
+  position: absolute;
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 15px;
+
+  color: #fff;
+
+  background: #020506;
+
+  transition:
+    opacity 0.65s ease,
+    visibility 0.65s ease;
+}
+
+.at-cinematic-video-intro.is-ready
+  .at-intro-loader {
+  opacity: 0;
+
+  visibility: hidden;
+
+  pointer-events: none;
+}
+
+.at-intro-loader-mark {
+  width: 54px;
+  height: 54px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.22);
+
+  border-radius: 50%;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+}
+
+.at-intro-loader-bar {
+  position: relative;
+
+  width: 130px;
+  height: 1px;
+
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.12);
+}
+
+.at-intro-loader-bar span {
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  width: 42%;
+
+  background: #fff;
+
+  animation:
+    atLoadingBar 1.1s ease-in-out
+    infinite;
+}
+
+@keyframes atLoadingBar {
+  from {
+    left: -50%;
+  }
+
+  to {
+    left: 110%;
+  }
+}
+
+.at-intro-loader p {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.4);
+
+  font-size: 9px;
+  font-weight: 650;
+
+  letter-spacing: 0.17em;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .at-intro-center {
+    top: 53%;
+  }
+
+  .at-brand-line-ansar {
+    font-size: clamp(
+      62px,
+      11vw,
+      100px
+    );
+  }
+
+  .at-brand-line-telecom {
+    font-size: clamp(
+      32px,
+      6.3vw,
+      56px
+    );
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .at-intro-video {
+    object-position: center center;
+  }
+
+  .at-intro-vignette {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.02) 25%,
+        rgba(0, 0, 0, 0.06) 62%,
+        rgba(0, 0, 0, 0.4)
+      );
+  }
+
+  .at-intro-center-focus {
+    top: 54%;
+
+    width: 96vw;
+    height: 70vh;
+  }
+
+  .at-intro-sound {
+    top: max(
+      15px,
+      env(safe-area-inset-top)
+    );
+
+    right: 15px;
+
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+  }
+
+  .at-intro-sound span {
+    display: none;
+  }
+
+  .at-intro-center {
+    top: 54%;
+
+    width: calc(100% - 30px);
+  }
+
+  .at-center-eyebrow {
+    gap: 9px;
+
+    margin-bottom: 14px;
+
+    font-size: 7px;
+
+    letter-spacing: 0.18em;
+  }
+
+  .at-center-eyebrow-line {
+    width: 20px;
+  }
+
+  .at-brand-line-ansar {
+    font-size: clamp(
+      56px,
+      19vw,
+      82px
+    );
+
+    letter-spacing: -0.06em;
+  }
+
+  .at-brand-line-telecom {
+    margin-top: 11px;
+
+    font-size: clamp(
+      30px,
+      10vw,
+      44px
+    );
+
+    letter-spacing: 0.08em;
+  }
+
+  .at-center-divider {
+    width: min(240px, 65vw);
+
+    margin-top: 24px;
+  }
+
+  .at-center-location {
+    margin-top: 16px;
+
+    font-size: 9px;
+
+    letter-spacing: 0.18em;
+  }
+
+  .at-center-enter {
+    width: min(
+      235px,
+      calc(100vw - 50px)
+    );
+
+    height: 56px;
+
+    margin-top: 27px;
+
+    padding:
+      5px
+      6px
+      5px
+      22px;
+  }
+
+  .at-center-enter-arrow {
+    width: 44px;
+    height: 44px;
+  }
+
+  .at-center-hint {
+    margin-top: 12px;
+
+    font-size: 7px;
+
+    letter-spacing: 0.15em;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 370px) {
+  .at-brand-line-ansar {
+    font-size: 53px;
+  }
+
+  .at-brand-line-telecom {
+    font-size: 29px;
+  }
+
+  .at-center-location {
+    font-size: 8px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (
+  prefers-reduced-motion: reduce
+) {
+  .at-intro-grain {
+    animation: none;
+  }
+
+  .at-intro-video,
+  .at-center-enter,
+  .at-center-enter-arrow,
+  .at-intro-sound {
+    transition: none;
+  }
+}

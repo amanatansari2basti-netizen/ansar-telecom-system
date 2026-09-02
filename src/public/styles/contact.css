@@ -1,0 +1,1960 @@
+/* =========================================================
+   ANSAR TELECOM — CONTACT
+========================================================= */
+
+.atc-page {
+  --atc-bg: #f3f0e9;
+  --atc-soft: #e8e3d9;
+  --atc-deep: #ddd7ca;
+
+  --atc-black: #12130f;
+  --atc-text: #292a24;
+  --atc-muted: #74746c;
+
+  --atc-yellow: #f4c400;
+  --atc-yellow-hover: #e4b800;
+
+  --atc-line: rgba(18, 19, 15, 0.13);
+  --atc-shell: 1360px;
+
+  min-height: 100vh;
+
+  color: var(--atc-text);
+  background: var(--atc-bg);
+}
+
+.atc-shell {
+  width: min(
+    calc(100% - 80px),
+    var(--atc-shell)
+  );
+
+  margin: 0 auto;
+}
+
+.atc-eyebrow {
+  display: inline-block;
+
+  color: #85847c;
+
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.atc-primary-button,
+.atc-outline-button,
+.atc-final__secondary {
+  display: inline-flex;
+
+  min-height: 45px;
+
+  padding: 0 20px;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.atc-primary-button {
+  border: 0;
+
+  color: var(--atc-black);
+  background: var(--atc-yellow);
+}
+
+.atc-primary-button:hover {
+  background: var(--atc-yellow-hover);
+
+  transform: translateY(-2px);
+}
+
+.atc-outline-button {
+  border:
+    1px solid
+    rgba(18, 19, 15, 0.2);
+
+  color: var(--atc-black);
+
+  background: transparent;
+}
+
+.atc-outline-button:hover {
+  border-color:
+    rgba(18, 19, 15, 0.45);
+
+  transform: translateY(-2px);
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.atc-hero {
+  padding: 145px 0 95px;
+}
+
+.atc-hero__top {
+  display: flex;
+
+  margin-bottom: 50px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.atc-back {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #7a7972;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.atc-back:hover {
+  color: var(--atc-black);
+
+  transform: translateX(-3px);
+}
+
+.atc-hero__status {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #8c8b83;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.atc-hero__status > span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: var(--atc-yellow);
+}
+
+.atc-hero__layout {
+  display: grid;
+
+  padding: 25px 55px 65px;
+
+  grid-template-columns:
+    minmax(0, 1.35fr)
+    minmax(300px, 0.65fr);
+
+  align-items: end;
+
+  gap: 90px;
+}
+
+.atc-hero__heading h1 {
+  margin: 18px 0 0;
+
+  color: var(--atc-black);
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      62px,
+      6.5vw,
+      102px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.92;
+
+  letter-spacing: -0.07em;
+}
+
+.atc-hero__heading h1 span {
+  color: #77766e;
+}
+
+.atc-hero__copy p {
+  max-width: 420px;
+
+  margin: 0 0 25px;
+
+  color: var(--atc-muted);
+
+  font-size: 11px;
+
+  line-height: 1.8;
+}
+
+.atc-hero__actions {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+/* =========================================================
+   HERO VISUAL
+========================================================= */
+
+.atc-hero__visual {
+  display: grid;
+
+  min-height: 500px;
+
+  padding: 65px;
+
+  grid-template-columns:
+    0.8fr 1.2fr;
+
+  align-items: center;
+
+  gap: 70px;
+
+  overflow: hidden;
+
+  border-radius: 5px;
+
+  color: #fff;
+
+  background: var(--atc-black);
+}
+
+.atc-hero__visual-copy > span {
+  color: #72736c;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  letter-spacing: 0.14em;
+}
+
+.atc-hero__visual-copy h2 {
+  margin: 18px 0;
+
+  color: #fff;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      44px,
+      4.7vw,
+      70px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.95;
+
+  letter-spacing: -0.06em;
+}
+
+.atc-hero__visual-copy p {
+  margin: 0;
+
+  color: #8d8e87;
+
+  font-size: 9px;
+
+  line-height: 1.7;
+}
+
+.atc-hero__location {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-direction: column;
+
+  text-align: center;
+}
+
+.atc-hero__location-ring {
+  display: grid;
+
+  width: 230px;
+  height: 230px;
+
+  place-items: center;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 40px
+    rgba(255, 255, 255, 0.025);
+}
+
+.atc-hero__location-pin {
+  display: grid;
+
+  width: 82px;
+  height: 82px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--atc-black);
+
+  background: var(--atc-yellow);
+}
+
+.atc-hero__location-copy {
+  display: flex;
+
+  margin-top: 32px;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.atc-hero__location-copy > span {
+  color: #71726b;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.13em;
+}
+
+.atc-hero__location-copy strong {
+  color: #fff;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size: 27px;
+  font-weight: 600;
+
+  letter-spacing: -0.04em;
+}
+
+.atc-hero__location-copy small {
+  color: #82837c;
+
+  font-size: 7px;
+}
+
+/* =========================================================
+   HERO META
+========================================================= */
+
+.atc-hero__meta {
+  display: flex;
+
+  min-height: 85px;
+
+  padding: 0 30px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom:
+    1px solid var(--atc-line);
+}
+
+.atc-hero__meta > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.atc-hero__meta span {
+  color: #9a9890;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.11em;
+}
+
+.atc-hero__meta strong {
+  color: #55564f;
+
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.atc-hero__meta i {
+  width: 1px;
+  height: 28px;
+
+  background: var(--atc-line);
+}
+
+/* =========================================================
+   SECTION HEADING
+========================================================= */
+
+.atc-section-heading {
+  display: grid;
+
+  margin-bottom: 58px;
+
+  grid-template-columns:
+    1fr 0.45fr;
+
+  align-items: end;
+
+  gap: 80px;
+}
+
+.atc-section-heading h2 {
+  margin: 18px 0 0;
+
+  color: var(--atc-black);
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      48px,
+      5vw,
+      76px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.98;
+
+  letter-spacing: -0.06em;
+}
+
+.atc-section-heading h2 span {
+  color: #77766e;
+}
+
+.atc-section-heading > p {
+  max-width: 410px;
+
+  margin: 0;
+
+  color: var(--atc-muted);
+
+  font-size: 10px;
+
+  line-height: 1.8;
+}
+
+/* =========================================================
+   CONNECT
+========================================================= */
+
+.atc-connect {
+  padding: 120px 0 135px;
+
+  background: var(--atc-soft);
+}
+
+.atc-contact-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  border-top:
+    1px solid var(--atc-line);
+
+  border-left:
+    1px solid var(--atc-line);
+}
+
+.atc-contact-card {
+  display: flex;
+
+  min-height: 390px;
+
+  padding: 27px;
+
+  flex-direction: column;
+
+  border-right:
+    1px solid var(--atc-line);
+
+  border-bottom:
+    1px solid var(--atc-line);
+
+  transition:
+    background 0.3s ease;
+}
+
+.atc-contact-card:hover {
+  background:
+    rgba(255, 255, 255, 0.28);
+}
+
+.atc-contact-card__top {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.atc-contact-card__top > span {
+  color: #99978f;
+
+  font-size: 7px;
+}
+
+.atc-contact-card__icon {
+  display: grid;
+
+  width: 54px;
+  height: 54px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--atc-black);
+
+  background: var(--atc-yellow);
+}
+
+.atc-contact-card__content {
+  margin-top: auto;
+
+  padding-top: 45px;
+}
+
+.atc-contact-card__label {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #96958d;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.atc-contact-card h3 {
+  margin: 0;
+
+  color: var(--atc-black);
+
+  font-family: "Manrope", sans-serif;
+
+  font-size: 21px;
+  font-weight: 600;
+
+  line-height: 1.1;
+
+  letter-spacing: -0.045em;
+}
+
+.atc-contact-card__value {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #5e5f58;
+
+  font-size: 10px;
+}
+
+.atc-contact-card p {
+  margin: 13px 0 0;
+
+  color: #77766f;
+
+  font-size: 8px;
+
+  line-height: 1.7;
+}
+
+.atc-contact-card__action {
+  display: flex;
+
+  margin-top: 23px;
+  padding-top: 17px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  border-top:
+    1px solid var(--atc-line);
+
+  color: var(--atc-black);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+.atc-contact-card__action svg {
+  transition:
+    transform 0.2s ease;
+}
+
+.atc-contact-card__action:hover svg {
+  transform:
+    translate(2px, -1px);
+}
+
+/* =========================================================
+   LOCATION
+========================================================= */
+
+.atc-location {
+  padding: 135px 0;
+}
+
+.atc-location__grid {
+  display: grid;
+
+  grid-template-columns:
+    1.05fr 0.95fr;
+
+  gap: 14px;
+}
+
+/* =========================================================
+   LOCATION VISUAL
+========================================================= */
+
+.atc-location__visual {
+  display: flex;
+
+  min-height: 650px;
+
+  padding: 35px;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  color: #fff;
+
+  background: var(--atc-black);
+}
+
+.atc-location__visual-top {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  color: #74756e;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.atc-location__map-art {
+  position: relative;
+
+  flex: 1;
+
+  overflow: hidden;
+}
+
+.atc-location__map-art::before,
+.atc-location__map-art::after {
+  content: "";
+
+  position: absolute;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.07);
+
+  border-radius: 50%;
+}
+
+.atc-location__map-art::before {
+  width: 440px;
+  height: 440px;
+
+  top: 50%;
+  left: 50%;
+
+  transform:
+    translate(-50%, -50%);
+}
+
+.atc-location__map-art::after {
+  width: 280px;
+  height: 280px;
+
+  top: 50%;
+  left: 50%;
+
+  transform:
+    translate(-50%, -50%);
+}
+
+.atc-map-line {
+  position: absolute;
+
+  z-index: 1;
+
+  height: 1px;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+
+  transform-origin: center;
+}
+
+.atc-map-line--one {
+  top: 37%;
+  left: -5%;
+
+  width: 110%;
+
+  transform: rotate(-14deg);
+}
+
+.atc-map-line--two {
+  top: 58%;
+  left: -5%;
+
+  width: 110%;
+
+  transform: rotate(19deg);
+}
+
+.atc-map-line--three {
+  top: 50%;
+  left: 8%;
+
+  width: 85%;
+
+  transform: rotate(65deg);
+}
+
+.atc-location__pin {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  z-index: 4;
+
+  display: grid;
+
+  width: 82px;
+  height: 82px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--atc-black);
+
+  background: var(--atc-yellow);
+
+  transform:
+    translate(-50%, -50%);
+
+  box-shadow:
+    0 0 0 15px
+    rgba(244, 196, 0, 0.09);
+}
+
+.atc-location__destination {
+  position: absolute;
+
+  bottom: 25px;
+  left: 25px;
+
+  z-index: 4;
+
+  display: flex;
+
+  padding: 18px;
+
+  flex-direction: column;
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(10px);
+}
+
+.atc-location__destination small {
+  color: #70716a;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.atc-location__destination strong {
+  margin-top: 6px;
+
+  color: #fff;
+
+  font-size: 13px;
+}
+
+.atc-location__destination span {
+  margin-top: 3px;
+
+  color: #81827b;
+
+  font-size: 7px;
+}
+
+.atc-location__map-button {
+  display: flex;
+
+  min-height: 52px;
+
+  padding: 0 18px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  color: var(--atc-black);
+
+  background: var(--atc-yellow);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+/* =========================================================
+   LOCATION CONTENT
+========================================================= */
+
+.atc-location__content {
+  display: flex;
+
+  min-height: 650px;
+
+  padding: 60px;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  background: var(--atc-soft);
+}
+
+.atc-location__content h2 {
+  margin: 17px 0 40px;
+
+  color: var(--atc-black);
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      47px,
+      5vw,
+      72px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.96;
+
+  letter-spacing: -0.06em;
+}
+
+.atc-location__content h2 span {
+  color: #77766e;
+}
+
+.atc-location__address {
+  display: flex;
+
+  padding: 25px 0;
+
+  align-items: flex-start;
+
+  gap: 15px;
+
+  border-top:
+    1px solid var(--atc-line);
+
+  border-bottom:
+    1px solid var(--atc-line);
+}
+
+.atc-location__address-icon {
+  display: grid;
+
+  width: 48px;
+  height: 48px;
+
+  flex: 0 0 auto;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: var(--atc-yellow);
+}
+
+.atc-location__address > div:last-child {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.atc-location__address span {
+  color: #8d8c84;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.atc-location__address address {
+  color: #2b2c26;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  font-style: normal !important;
+
+  line-height: 1.65 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+  
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.atc-location__address address span {
+  display: block !important;
+  
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  
+  line-height: 1.65 !important;
+  
+  color: #2b2c26 !important;
+  
+  font-family: inherit !important;
+}
+
+.atc-location__landmark {
+  display: flex;
+
+  margin-top: 25px;
+
+  align-items: flex-start;
+
+  gap: 10px;
+}
+
+.atc-location__landmark > svg {
+  flex: 0 0 auto;
+
+  margin-top: 2px;
+}
+
+.atc-location__landmark > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.atc-location__landmark span {
+  color: #99978f;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.atc-location__landmark strong {
+  color: #64645d;
+
+  font-size: 13px !important;
+  font-weight: 600 !important;
+
+  line-height: 1.6;
+}
+
+.atc-location__direction {
+  display: flex;
+
+  margin-top: 30px;
+  padding: 18px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  color: #fff;
+
+  background: var(--atc-black);
+
+  text-decoration: none;
+
+  transition:
+    transform 0.25s ease;
+}
+
+.atc-location__direction:hover {
+  transform: translateY(-2px);
+}
+
+.atc-location__direction > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.atc-location__direction > div > svg {
+  color: var(--atc-yellow);
+}
+
+.atc-location__direction span {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.atc-location__direction small {
+  color: #73746d;
+
+  font-size: 6px;
+  font-weight: 700;
+}
+
+.atc-location__direction strong {
+  color: #fff;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   REPAIR VISIT
+========================================================= */
+
+.atc-visit {
+  padding: 125px 0 135px;
+
+  background: var(--atc-soft);
+}
+
+.atc-visit__grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  border-top:
+    1px solid var(--atc-line);
+
+  border-left:
+    1px solid var(--atc-line);
+}
+
+.atc-visit-card {
+  display: flex;
+
+  min-height: 330px;
+
+  padding: 28px;
+
+  flex-direction: column;
+
+  border-right:
+    1px solid var(--atc-line);
+
+  border-bottom:
+    1px solid var(--atc-line);
+}
+
+.atc-visit-card__top {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.atc-visit-card__top > span {
+  color: #99978f;
+
+  font-size: 7px;
+}
+
+.atc-visit-card__top > div {
+  display: grid;
+
+  width: 54px;
+  height: 54px;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--atc-black);
+
+  background: var(--atc-yellow);
+}
+
+.atc-visit-card__content {
+  margin-top: auto;
+}
+
+.atc-visit-card h3 {
+  margin: 0 0 11px;
+
+  color: var(--atc-black);
+
+  font-family: "Manrope", sans-serif;
+
+  font-size: 22px;
+  font-weight: 600;
+
+  letter-spacing: -0.045em;
+}
+
+.atc-visit-card p {
+  max-width: 320px;
+
+  margin: 0;
+
+  color: #74736c;
+
+  font-size: 9px;
+
+  line-height: 1.7;
+}
+
+/* =========================================================
+   DIRECT CONTACT
+========================================================= */
+
+.atc-direct {
+  padding: 135px 0;
+}
+
+.atc-direct__grid {
+  display: grid;
+
+  grid-template-columns:
+    1fr 0.85fr;
+
+  gap: 14px;
+}
+
+.atc-direct__copy {
+  display: flex;
+
+  min-height: 590px;
+
+  padding: 65px;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  background: var(--atc-deep);
+}
+
+.atc-direct__copy h2 {
+  margin: 18px 0 25px;
+
+  color: var(--atc-black);
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      50px,
+      5.3vw,
+      78px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.96;
+
+  letter-spacing: -0.065em;
+}
+
+.atc-direct__copy h2 span {
+  color: #77766e;
+}
+
+.atc-direct__copy > p {
+  max-width: 600px;
+
+  margin: 0;
+
+  color: #696a63;
+
+  font-size: 10px;
+
+  line-height: 1.8;
+}
+
+.atc-direct__trust {
+  display: flex;
+
+  margin-top: 35px;
+  padding-top: 25px;
+
+  flex-wrap: wrap;
+
+  gap: 13px 25px;
+
+  border-top:
+    1px solid var(--atc-line);
+}
+
+.atc-direct__trust span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #565750;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   PHONE PANEL
+========================================================= */
+
+.atc-phone-panel {
+  display: flex;
+
+  min-height: 590px;
+
+  padding: 35px;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  color: #fff;
+
+  background: var(--atc-black);
+}
+
+.atc-phone-panel__heading {
+  display: flex;
+
+  padding: 0 10px 25px;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.atc-phone-panel__heading span {
+  color: #6d6e67;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.13em;
+}
+
+.atc-phone-panel__heading strong {
+  color: #fff;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size: 22px;
+  font-weight: 600;
+
+  letter-spacing: -0.04em;
+}
+
+.atc-phone-row {
+  display: grid;
+
+  min-height: 105px;
+
+  padding: 18px 10px;
+
+  grid-template-columns:
+    48px 1fr 20px;
+
+  align-items: center;
+
+  gap: 14px;
+
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.09);
+
+  color: #fff;
+
+  text-decoration: none;
+
+  transition:
+    background 0.25s ease,
+    padding 0.25s ease;
+}
+
+.atc-phone-row:last-child {
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.09);
+}
+
+.atc-phone-row:hover {
+  padding-right: 17px;
+  padding-left: 17px;
+
+  background:
+    rgba(255, 255, 255, 0.04);
+}
+
+.atc-phone-row__icon {
+  display: grid;
+
+  width: 45px;
+  height: 45px;
+
+  place-items: center;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 50%;
+
+  color: #9a9b94;
+}
+
+.atc-phone-row--primary
+  .atc-phone-row__icon {
+  color: var(--atc-black);
+
+  border-color: var(--atc-yellow);
+
+  background: var(--atc-yellow);
+}
+
+.atc-phone-row__content {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.atc-phone-row__content span {
+  color: #686963;
+
+  font-size: 6px;
+  font-weight: 700;
+
+  letter-spacing: 0.1em;
+}
+
+.atc-phone-row__content strong {
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.atc-phone-row__content small {
+  color: #777871;
+
+  font-size: 7px;
+}
+
+/* =========================================================
+   TRACKING CTA
+========================================================= */
+
+.atc-tracking {
+  padding: 80px 0;
+
+  background: var(--atc-soft);
+}
+
+.atc-tracking__inner {
+  display: grid;
+
+  min-height: 390px;
+
+  padding: 55px;
+
+  grid-template-columns:
+    1fr 0.55fr;
+
+  align-items: center;
+
+  gap: 80px;
+
+  color: #fff;
+
+  background: var(--atc-black);
+}
+
+.atc-tracking__inner > div:first-child > span {
+  color: #74756e;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  letter-spacing: 0.13em;
+}
+
+.atc-tracking__inner h2 {
+  margin: 15px 0 0;
+
+  color: #fff;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      48px,
+      5vw,
+      73px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.96;
+
+  letter-spacing: -0.06em;
+}
+
+.atc-tracking__inner h2 em {
+  color: #85867f;
+
+  font-style: normal;
+}
+
+.atc-tracking__right p {
+  max-width: 430px;
+
+  margin: 0 0 25px;
+
+  color: #8e8f88;
+
+  font-size: 9px;
+
+  line-height: 1.75;
+}
+
+.atc-tracking__button {
+  display: inline-flex;
+
+  min-height: 45px;
+
+  padding: 0 20px;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border-radius: 999px;
+
+  color: var(--atc-black);
+
+  background: var(--atc-yellow);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+/* =========================================================
+   FINAL
+========================================================= */
+
+.atc-final {
+  padding: 70px 0 45px;
+}
+
+.atc-final__box {
+  display: flex;
+
+  min-height: 550px;
+
+  padding: 60px 30px;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-direction: column;
+
+  border-radius: 5px;
+
+  text-align: center;
+
+  color: #fff;
+
+  background: var(--atc-black);
+}
+
+.atc-final__box > span {
+  color: #74756e;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  letter-spacing: 0.15em;
+}
+
+.atc-final__box h2 {
+  margin: 17px 0 0;
+
+  color: #fff;
+
+  font-family: "Manrope", sans-serif;
+
+  font-size:
+    clamp(
+      60px,
+      7vw,
+      100px
+    );
+
+  font-weight: 600;
+
+  line-height: 0.88;
+
+  letter-spacing: -0.07em;
+}
+
+.atc-final__box p {
+  max-width: 500px;
+
+  margin: 28px auto 0;
+
+  color: #8d8e87;
+
+  font-size: 9px;
+
+  line-height: 1.75;
+}
+
+.atc-final__actions {
+  display: flex;
+
+  margin-top: 28px;
+
+  gap: 9px;
+}
+
+.atc-final__secondary {
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.22);
+
+  color: #fff;
+
+  background: transparent;
+}
+
+.atc-final__address {
+  display: flex;
+
+  margin-top: 35px;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #65665f;
+
+  font-size: 7px;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .atc-hero__layout {
+    padding-right: 30px;
+    padding-left: 30px;
+
+    gap: 50px;
+  }
+
+  .atc-hero__visual {
+    padding: 50px 35px;
+  }
+
+  .atc-contact-grid {
+    grid-template-columns:
+      1fr 1fr;
+  }
+}
+
+/* =========================================================
+   SMALL TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+  .atc-shell {
+    width:
+      calc(100% - 40px);
+  }
+
+  .atc-hero__layout,
+  .atc-section-heading,
+  .atc-location__grid,
+  .atc-direct__grid,
+  .atc-tracking__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .atc-hero__layout {
+    gap: 35px;
+  }
+
+  .atc-hero__visual {
+    grid-template-columns: 1fr;
+
+    gap: 50px;
+  }
+
+  .atc-location__visual,
+  .atc-location__content,
+  .atc-direct__copy,
+  .atc-phone-panel {
+    min-height: 520px;
+  }
+
+  .atc-tracking__inner {
+    gap: 35px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .atc-shell {
+    width:
+      calc(100% - 24px);
+  }
+
+  .atc-hero {
+    padding:
+      110px 0 70px;
+  }
+
+  .atc-hero__top {
+    margin-bottom: 30px;
+  }
+
+  .atc-hero__status {
+    display: none;
+  }
+
+  .atc-hero__layout {
+    padding:
+      30px 8px 40px;
+  }
+
+  .atc-hero__heading h1 {
+    font-size:
+      clamp(
+        50px,
+        15vw,
+        68px
+      );
+  }
+
+  .atc-hero__copy p {
+    font-size: 10px;
+  }
+
+  .atc-hero__actions {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+  .atc-primary-button,
+  .atc-outline-button {
+    width: 100%;
+  }
+
+  .atc-hero__visual {
+    min-height: 610px;
+
+    padding: 40px 22px;
+  }
+
+  .atc-hero__visual-copy h2 {
+    font-size: 49px;
+  }
+
+  .atc-hero__location-ring {
+    width: 190px;
+    height: 190px;
+  }
+
+  .atc-hero__meta {
+    display: grid;
+
+    padding: 25px 8px;
+
+    grid-template-columns:
+      1fr 1fr;
+
+    gap: 25px;
+  }
+
+  .atc-hero__meta i {
+    display: none;
+  }
+
+  .atc-connect,
+  .atc-location,
+  .atc-visit,
+  .atc-direct {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .atc-section-heading {
+    margin-bottom: 38px;
+
+    gap: 20px;
+  }
+
+  .atc-section-heading h2,
+  .atc-location__content h2,
+  .atc-direct__copy h2,
+  .atc-tracking__inner h2 {
+    font-size:
+      clamp(
+        42px,
+        13vw,
+        57px
+      );
+  }
+
+  /* CONTACT CARDS */
+
+  .atc-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .atc-contact-card {
+    min-height: 300px;
+  }
+
+  /* LOCATION */
+
+  .atc-location__visual {
+    min-height: 550px;
+
+    padding: 25px;
+  }
+
+  .atc-location__content {
+    min-height: auto;
+
+    padding: 45px 25px;
+  }
+
+  .atc-location__map-art::before {
+    width: 330px;
+    height: 330px;
+  }
+
+  .atc-location__map-art::after {
+    width: 210px;
+    height: 210px;
+  }
+
+  .atc-location__destination {
+    bottom: 15px;
+    left: 0;
+  }
+  
+  /* ADDRESS MOBILE FIX */
+  .atc-location__address address {
+    font-size: 14px !important;
+  }
+  
+  .atc-location__address address span {
+    font-size: 14px !important;
+  }
+
+  /* VISIT */
+
+  .atc-visit__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .atc-visit-card {
+    min-height: 270px;
+  }
+
+  /* DIRECT */
+
+  .atc-direct__copy {
+    min-height: auto;
+
+    padding: 50px 25px;
+  }
+
+  .atc-phone-panel {
+    min-height: auto;
+
+    padding: 30px 20px;
+  }
+
+  /* TRACKING */
+
+  .atc-tracking {
+    padding: 60px 0;
+  }
+
+  .atc-tracking__inner {
+    min-height: 450px;
+
+    padding: 40px 25px;
+  }
+
+  .atc-tracking__button {
+    width: 100%;
+  }
+
+  /* FINAL */
+
+  .atc-final__box {
+    min-height: 520px;
+
+    padding: 50px 23px;
+  }
+
+  .atc-final__box h2 {
+    font-size:
+      clamp(
+        58px,
+        17vw,
+        78px
+      );
+  }
+
+  .atc-final__actions {
+    width: 100%;
+
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+  .atc-final__secondary {
+    width: 100%;
+  }
+
+  .atc-final__address {
+    max-width: 260px;
+
+    line-height: 1.6;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+  .atc-hero__heading h1 {
+    font-size: 47px;
+  }
+
+  .atc-hero__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .atc-location__content h2,
+  .atc-direct__copy h2 {
+    font-size: 41px;
+  }
+
+  .atc-phone-row {
+    grid-template-columns:
+      43px 1fr 17px;
+
+    gap: 10px;
+  }
+
+  .atc-final__box h2 {
+    font-size: 55px;
+  }
+}
