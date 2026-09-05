@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 
 import {
   ArrowLeft,
@@ -10,6 +10,7 @@ import {
   IndianRupee,
   LockKeyhole,
   PackageCheck,
+  PhoneCall,
   Search,
   ShieldCheck,
   Smartphone,
@@ -21,12 +22,30 @@ import {
   httpsCallable,
 } from "firebase/functions";
 
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+
 import { functions } from "../../firebase";
+import { db } from "../../firebase/firebase";
 
 import PublicNavbar from "../components/PublicNavbar";
 import { useLanguage } from "../context/LanguageContext";
 
 import "../styles/trackRepair.css";
+
+/* =========================================================
+   CONTACT NUMBERS FOR RECEPTION & OWNER APPROVAL
+========================================================= */
+
+const SHOP_PHONE = "9415172051";
+const SHOP_PHONE_DISPLAY = "+91 94151 72051";
 
 /* =========================================================
    CUSTOMER REPAIR LIFECYCLE
@@ -152,7 +171,7 @@ const trackContent = {
         "Repair Job ID",
 
       jobPlaceholder:
-        "Example: AT-1087",
+        "Example: AT-1006 or 1006",
 
       phone:
         "Registered mobile number",
@@ -271,13 +290,43 @@ const trackContent = {
         "CUSTOMER APPROVAL",
 
       pending:
-        "Pending",
+        "Pending Call",
 
       approved:
         "Approved",
 
       updated:
         "Updated",
+
+      callToApprove:
+        "Call to Approve",
+    },
+
+    approvalWindow: {
+      badge: "Customer Approval Required",
+      title: "Repair Estimate & Approval Details",
+      subtitle:
+        "Our technician has completed device diagnosis. Please review the diagnosed problem and repair cost below, then call our receptionist or shop owner to approve the repair.",
+      deviceLabel: "Device Model",
+      problemLabel: "Diagnosed Problem / Fault",
+      notesLabel: "Technician Notes",
+      partsLabel: "Parts Required",
+      partsNone: "Included in service (no extra parts)",
+      costLabel: "Total Repair Estimate",
+      partsCostLabel: "Parts Charges",
+      labourCostLabel: "Service / Labour Charges",
+      advanceLabel: "Advance Paid",
+      balanceLabel: "Payable on Delivery / Pickup",
+      callSectionTitle: "Call Receptionist to Approve",
+      callSectionDesc:
+        "Call our receptionist on the number below to give your approval. When you confirm over the phone, our receptionist or owner will mark 'Customer Approved' in our system and repair will begin immediately.",
+      callBtnLabel: "Call Receptionist",
+      callOwnerBtnLabel: "Owner (Aqib Ansari)",
+      whatsappBtnLabel: "Approve via WhatsApp",
+      approvalNotice: "Once you call and approve, the status will automatically update to Approved.",
+      approvedTitle: "Repair Approved by Customer",
+      approvedDesc:
+        "Your approval has been confirmed by our receptionist. Our technician is now actively working on your repair!",
     },
 
     payment: {
@@ -425,7 +474,7 @@ const trackContent = {
         "Repair Job ID",
 
       jobPlaceholder:
-        "उदाहरण: AT-1087",
+        "उदाहरण: AT-1006 या 1006",
 
       phone:
         "रजिस्टर्ड मोबाइल नंबर",
@@ -544,13 +593,43 @@ const trackContent = {
         "ग्राहक की मंजूरी",
 
       pending:
-        "बाकी है",
+        "कॉल की प्रतीक्षा",
 
       approved:
         "मंजूर किया गया",
 
       updated:
         "अपडेट",
+
+      callToApprove:
+        "कॉल करके अप्रूव करें",
+    },
+
+    approvalWindow: {
+      badge: "ग्राहक की मंजूरी आवश्यक",
+      title: "रिपेयर एस्टीमेट व स्वीकृति विवरण",
+      subtitle:
+        "हमारे टेक्नीशियन ने आपके डिवाइस की जांच (Diagnosis) पूरी कर ली है। कृपया नीचे समस्या और रिपेयर खर्च देखें, फिर रिसेप्शनिस्ट को कॉल करके रिपेयर की मंजूरी दें।",
+      deviceLabel: "डिवाइस मॉडल",
+      problemLabel: "पाई गई समस्या / खराबी",
+      notesLabel: "टेक्नीशियन का विवरण",
+      partsLabel: "ज़रूरी पार्ट्स",
+      partsNone: "सर्विस में शामिल (अलग से पार्ट्स की जरूरत नहीं)",
+      costLabel: "कुल अनुमानित रिपेयर खर्च",
+      partsCostLabel: "पार्ट्स का खर्च",
+      labourCostLabel: "सर्विस / लेबर चार्ज",
+      advanceLabel: "जमा अग्रिम राशि",
+      balanceLabel: "डिलीवरी / पिकअप पर देय राशि",
+      callSectionTitle: "रिसेप्शनिस्ट को कॉल करके अप्रूव करें",
+      callSectionDesc:
+        "नीचे दिए गए नंबर पर कॉल करके रिपेयर की सहमति दें। आपके कॉल पर 'रिपेयर कर दीजिए' कहते ही रिसेप्शनिस्ट या ओनर सिस्टम में 'Customer Approved' मार्क कर देंगे और रिपेयर तुरंत शुरू हो जाएगी।",
+      callBtnLabel: "रिसेप्शनिस्ट को कॉल करें",
+      callOwnerBtnLabel: "ओनर (आकिब अंसारी)",
+      whatsappBtnLabel: "व्हाट्सएप पर अप्रूव करें",
+      approvalNotice: "आपके कॉल करने पर रिसेप्शनिस्ट तुरंत 'Customer Approved' कर देंगे और स्टेटस बदल जाएगा।",
+      approvedTitle: "रिपेयर को ग्राहक द्वारा मंजूरी मिल चुकी है",
+      approvedDesc:
+        "रिसेप्शनिस्ट द्वारा आपकी सहमति दर्ज कर ली गई है। हमारे टेक्नीशियन आपके डिवाइस पर काम कर रहे हैं!",
     },
 
     payment: {
@@ -599,7 +678,94 @@ function normalizeJobId(value) {
   return String(value || "")
     .trim()
     .toUpperCase()
+    .replace(/^#+/, "")
     .replace(/\s+/g, "");
+}
+
+function extractCandidateJobIds(rawInput) {
+  if (!rawInput) return [];
+  const trimmed = String(rawInput).trim();
+  const candidates = new Set();
+
+  const cleaned = trimmed.replace(/\s+/g, "").toUpperCase();
+  if (cleaned) candidates.add(cleaned);
+
+  const noHash = cleaned.replace(/^#+/, "");
+  if (noHash) candidates.add(noHash);
+
+  const noJobPrefix = noHash.replace(/^JOB[-#_]?/, "");
+  if (noJobPrefix) candidates.add(noJobPrefix);
+
+  const numMatch = noHash.match(/\d+/);
+  if (numMatch) {
+    const num = numMatch[0];
+    candidates.add(`AT-${num}`);
+    candidates.add(`AT${num}`);
+    candidates.add(num);
+    const unpadded = String(parseInt(num, 10));
+    if (unpadded !== num) {
+      candidates.add(`AT-${unpadded}`);
+      candidates.add(`AT${unpadded}`);
+      candidates.add(unpadded);
+    }
+  }
+
+  if (/^AT\d+$/i.test(noHash)) {
+    candidates.add(`AT-${noHash.slice(2)}`);
+  }
+
+  if (/^AT-\d+$/i.test(noHash)) {
+    candidates.add(`AT${noHash.slice(3)}`);
+    candidates.add(noHash.slice(3));
+  }
+
+  return Array.from(candidates);
+}
+
+function extractDocPhones(docData) {
+  if (!docData) return [];
+  const phones = [];
+  const add = (val) => {
+    if (!val) return;
+    const clean = normalizeIndianPhone(String(val));
+    if (clean && !phones.includes(clean)) {
+      phones.push(clean);
+    }
+  };
+
+  add(docData.phone);
+  add(docData.mobileNumber);
+  add(docData.customerPhone);
+  add(docData.mobile);
+  add(docData.phoneNumber);
+  add(docData.contactNumber);
+  add(docData.customerContact);
+  add(docData.phoneNo);
+  add(docData.customerMobile);
+  if (docData.customer && typeof docData.customer === "object") {
+    add(docData.customer.phone);
+    add(docData.customer.mobile);
+  }
+  if (docData.pickupAddress && typeof docData.pickupAddress === "object") {
+    add(docData.pickupAddress.phone);
+  }
+  return phones;
+}
+
+function isPhoneMatch(docData, cleanPhone) {
+  if (!cleanPhone) return false;
+  const phones = extractDocPhones(docData);
+  if (phones.length === 0) {
+    return true;
+  }
+  if (phones.includes(cleanPhone)) return true;
+  for (const p of phones) {
+    if (p.endsWith(cleanPhone) || cleanPhone.endsWith(p)) return true;
+    if (cleanPhone.length >= 5 && p.slice(-5) === cleanPhone.slice(-5)) return true;
+  }
+  const last3 = docData.registeredPhoneLast3 || (phones[0] ? phones[0].slice(-3) : "");
+  if (last3 && last3.length >= 3 && cleanPhone.endsWith(last3)) return true;
+  return false;
 }
 
 function normalizeIndianPhone(value) {
@@ -734,6 +900,156 @@ function formatDate(
 }
 
 /* =========================================================
+   REPAIR DATA NORMALIZATION
+========================================================= */
+
+function normalizeRepairDoc(cleanJobId, docData, last3, firestoreId, collectionName = "repairJobs") {
+  if (!docData) return null;
+
+  const problem =
+    docData.problem ||
+    docData.issue ||
+    docData.reportedProblem ||
+    docData.diagnosisSummary ||
+    docData["diagnosis.summary"] ||
+    docData.diagnosis?.summary ||
+    docData["diagnosis.faultSummary"] ||
+    docData.diagnosis?.faultSummary ||
+    docData.diagnosisDetails ||
+    docData.diagnosisDescription ||
+    docData.faultSummary ||
+    "";
+
+  const diagnosisNotes =
+    docData["diagnosis.technicianNotes"] ||
+    docData.diagnosis?.technicianNotes ||
+    docData["diagnosis.description"] ||
+    docData.diagnosis?.description ||
+    docData.diagnosisDetails ||
+    docData.notes ||
+    "";
+
+  const partsRequired =
+    docData.partsRequired ||
+    docData.requiredParts ||
+    docData["diagnosis.requiredParts"] ||
+    docData.diagnosis?.requiredParts ||
+    docData["estimate.partsRequired"] ||
+    docData.estimate?.partsRequired ||
+    docData.partRequirement?.name ||
+    "";
+
+  const totalAmount = Number(
+    docData["estimate.totalAmount"] ||
+    docData.estimate?.totalAmount ||
+    docData["estimate.total"] ||
+    docData.estimate?.total ||
+    docData.estimatedCost ||
+    docData.estimatedCharge ||
+    docData.amount ||
+    docData.totalAmount ||
+    0
+  );
+
+  const partsAmount = Number(
+    docData["estimate.partsAmount"] ||
+    docData.estimate?.partsAmount ||
+    0
+  );
+
+  const labourAmount = Number(
+    docData["estimate.labourAmount"] ||
+    docData.estimate?.labourAmount ||
+    0
+  );
+
+  const paidAmount = Number(
+    docData.receivedAmount ||
+    docData.paidAmount ||
+    docData.advance ||
+    docData.payment?.paidAmount ||
+    0
+  );
+
+  const balanceAmount = Math.max(0, totalAmount - paidAmount);
+
+  const rawApprovalStatus =
+    docData["customerApproval.status"] ||
+    docData.customerApproval?.status ||
+    docData.approvalStatus;
+
+  const repairStage =
+    docData.repairStage ||
+    docData.status ||
+    "Device Received";
+
+  const approvalStatus =
+    rawApprovalStatus ||
+    (repairStage === "Waiting Customer Approval" ? "Pending" : null);
+
+  const approvedAt =
+    docData["customerApproval.approvedAt"] ||
+    docData.customerApproval?.approvedAt ||
+    docData.approvalConfirmedAt ||
+    null;
+
+  const rejectedAt =
+    docData["customerApproval.rejectedAt"] ||
+    docData.customerApproval?.rejectedAt ||
+    null;
+
+  return {
+    ...docData,
+    firestoreId: firestoreId || docData.id || cleanJobId,
+    collectionName: collectionName || "repairJobs",
+    jobId: docData.id || docData.jobId || cleanJobId,
+    device: docData.device || `${docData.brand || ""} ${docData.model || ""}`.trim() || "Customer Device",
+    brand: docData.brand || "",
+    model: docData.model || "",
+    repairStage,
+    customerStatus: docData.customerStatus || "Your repair is currently in progress at Ansar Telecom.",
+    customerStatusCode: docData.customerStatusCode || "IN_PROGRESS",
+    registeredPhoneLast3: last3,
+    isPickDrop: Boolean(docData.isPickDrop || docData.source === "pick_and_drop" || docData.riderStatus),
+    riderStatus: docData.riderStatus || null,
+    assignedRiderName: docData.assignedRiderName || null,
+    createdAt: docData.createdAt?.toDate ? docData.createdAt.toDate().toISOString() : (docData.createdAt || new Date().toISOString()),
+    updatedAt: docData.updatedAt?.toDate ? docData.updatedAt.toDate().toISOString() : (docData.updatedAt || null),
+
+    problem: problem || "Comprehensive diagnosis & device service",
+    diagnosisNotes,
+    partsRequired,
+    estimatedCost: totalAmount,
+    partsAmount,
+    labourAmount,
+    receivedAmount: paidAmount,
+    balanceAmount,
+
+    estimate: {
+      diagnosisSummary: problem || "Complete device diagnosis",
+      partsRequired: partsRequired || "",
+      total: totalAmount,
+      partsAmount,
+      labourAmount,
+      preparedBy: docData["estimate.preparedBy"] || docData.estimate?.preparedBy || docData.technicianName || "",
+    },
+
+    customerApproval: {
+      status: approvalStatus || "Pending",
+      approvedAt,
+      rejectedAt,
+    },
+
+    payment: docData.payment || {
+      status: (paidAmount >= totalAmount && totalAmount > 0) ? "Paid" : (paidAmount > 0 ? "Partial" : "Pending"),
+      totalAmount,
+      paidAmount,
+      balance: balanceAmount,
+    },
+  };
+}
+
+/* =========================================================
    STAGE NORMALIZATION
 ========================================================= */
 
@@ -860,6 +1176,10 @@ function getFirebaseErrorMessage(
   error,
   text
 ) {
+  if (error?.message && !error?.code && !error.message.startsWith("FirebaseError")) {
+    return error.message;
+  }
+
   const code = String(
     error?.code || ""
   ).toLowerCase();
@@ -937,16 +1257,20 @@ function getFirebaseErrorMessage(
 function TrackRepair() {
   const { language } =
     useLanguage();
+  const [searchParams] = useSearchParams();
 
   const text =
     trackContent[language] ||
     trackContent.en;
 
   const [jobId, setJobId] =
-    useState("");
+    useState(() => (searchParams.get("jobId") || "").toUpperCase());
 
   const [phone, setPhone] =
-    useState("");
+    useState(() => formatPhoneInput(searchParams.get("phone") || ""));
+
+  const [customerRepairsList, setCustomerRepairsList] =
+    useState([]);
 
   const [loading, setLoading] =
     useState(false);
@@ -977,134 +1301,292 @@ function TrackRepair() {
      VALIDATION
   ======================================================= */
 
-  const validate = () => {
+  const validate = (targetJobId = jobId, targetPhone = normalizedPhone) => {
+    const cleanPhone =
+      normalizeIndianPhone(targetPhone);
+
+    if (
+      cleanPhone.length !==
+        10 ||
+      !/^[6-9]\d{9}$/.test(
+        cleanPhone
+      )
+    ) {
+      return text.errors.phoneInvalid;
+    }
+
     const cleanJobId =
-      normalizeJobId(jobId);
+      normalizeJobId(targetJobId);
 
     if (!cleanJobId) {
       return text.errors.jobRequired;
     }
 
     if (
-      !/^[A-Z0-9-]{3,30}$/.test(
+      !/^[A-Z0-9-]{1,30}$/.test(
         cleanJobId
       )
     ) {
       return text.errors.jobInvalid;
     }
 
-    if (
-      normalizedPhone.length !==
-        10 ||
-      !/^[6-9]\d{9}$/.test(
-        normalizedPhone
-      )
-    ) {
-      return text.errors.phoneInvalid;
-    }
-
     return "";
   };
+
+  /* =======================================================
+     LOOKUP LOGIC (Cloud Function + Direct Multi-Strategy Firestore)
+  ======================================================= */
+
+  const executeLookup = async (targetJobId, targetPhone) => {
+    const rawJobId = String(targetJobId || "").trim();
+    const cleanJobId = normalizeJobId(rawJobId);
+    const cleanPhone = normalizeIndianPhone(targetPhone);
+    const candidates = extractCandidateJobIds(rawJobId);
+
+    const validationError = validate(cleanJobId, cleanPhone);
+    if (validationError) {
+      setError(validationError);
+      setRepair(null);
+      setSearched(false);
+      setCustomerRepairsList([]);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setRepair(null);
+    setSearched(false);
+    setCustomerRepairsList([]);
+
+    try {
+      let repairData = null;
+
+      // 1. Try Cloud Function first if candidate is available
+      if (candidates.length > 0) {
+        try {
+          const trackRepair = httpsCallable(functions, "trackRepair");
+          const result = await trackRepair({
+            jobId: candidates[0],
+            phone: cleanPhone,
+          });
+
+          if (result?.data?.success && result?.data?.repair) {
+            repairData = normalizeRepairDoc(
+              result.data.repair.jobId || candidates[0],
+              result.data.repair,
+              result.data.repair.registeredPhoneLast3 || cleanPhone.slice(-3),
+              result.data.repair.id || candidates[0],
+              "repairJobs"
+            );
+          }
+        } catch (cfErr) {
+          console.warn("Cloud function tracking attempt:", cfErr?.message || cfErr);
+        }
+      }
+
+      // 2. Direct Firestore fallback
+      if (!repairData) {
+        let matchedDoc = null;
+        let matchedCollection = "repairJobs";
+
+        // 2a. Direct getDoc in repairJobs
+        if (candidates.length > 0) {
+          const docPromises = candidates.map((cand) => getDoc(doc(db, "repairJobs", cand)));
+          const snaps = await Promise.all(docPromises);
+          const foundIndex = snaps.findIndex((s) => s.exists());
+          if (foundIndex !== -1) {
+            matchedDoc = snaps[foundIndex];
+            matchedCollection = "repairJobs";
+          }
+        }
+
+        // 2b. Direct getDoc in pickupRequests
+        if (!matchedDoc && candidates.length > 0) {
+          const pickupPromises = candidates.map((cand) => getDoc(doc(db, "pickupRequests", cand)));
+          const pickupSnaps = await Promise.all(pickupPromises);
+          const foundPickupIndex = pickupSnaps.findIndex((s) => s.exists());
+          if (foundPickupIndex !== -1) {
+            matchedDoc = pickupSnaps[foundPickupIndex];
+            matchedCollection = "pickupRequests";
+          }
+        }
+
+        // 2c. Query collection repairJobs by 'id' field
+        if (!matchedDoc && candidates.length > 0) {
+          const candSlice = candidates.slice(0, 10);
+          try {
+            const idQuery = query(collection(db, "repairJobs"), where("id", "in", candSlice));
+            const idSnap = await getDocs(idQuery);
+            if (!idSnap.empty) {
+              matchedDoc = idSnap.docs[0];
+              matchedCollection = "repairJobs";
+            }
+          } catch {
+            // Ignore query error
+          }
+        }
+
+        // 2d. Query collection repairJobs by 'jobId' field
+        if (!matchedDoc && candidates.length > 0) {
+          const candSlice = candidates.slice(0, 10);
+          try {
+            const jobIdQuery = query(collection(db, "repairJobs"), where("jobId", "in", candSlice));
+            const jobIdSnap = await getDocs(jobIdQuery);
+            if (!jobIdSnap.empty) {
+              matchedDoc = jobIdSnap.docs[0];
+              matchedCollection = "repairJobs";
+            }
+          } catch {
+            // Ignore query error
+          }
+        }
+
+        // If matched by Job ID candidate:
+        if (matchedDoc) {
+          const docData = matchedDoc.data();
+          if (isPhoneMatch(docData, cleanPhone)) {
+            const phones = extractDocPhones(docData);
+            const last3 = docData.registeredPhoneLast3 || (phones[0] ? phones[0].slice(-3) : cleanPhone.slice(-3));
+            const canonicalJobId = docData.id || docData.jobId || matchedDoc.id;
+            repairData = normalizeRepairDoc(canonicalJobId, docData, last3, matchedDoc.id, matchedCollection);
+          } else {
+            const phones = extractDocPhones(docData);
+            const last3 = docData.registeredPhoneLast3 || (phones[0] ? phones[0].slice(-3) : "");
+            const mask = last3 ? `•••${last3}` : "registered phone";
+            const mismatchError = language === "hi"
+              ? `Job ID ${matchedDoc.id} मिल गया, लेकिन आपका दर्ज मोबाइल नंबर मेल नहीं खाता। (रजिस्टर्ड नंबर ${mask} पर समाप्त होता है)`
+              : `Job ID ${matchedDoc.id} was found, but the entered mobile number does not match. (Registered phone ends with ${mask})`;
+            throw new Error(mismatchError);
+          }
+        } else {
+          // Document was NOT found by Job ID candidate.
+          // Search if this customer has repairs registered under their mobile number!
+          const phoneQueries = [
+            query(collection(db, "repairJobs"), where("phone", "==", cleanPhone)),
+            query(collection(db, "repairJobs"), where("mobileNumber", "==", cleanPhone)),
+            query(collection(db, "repairJobs"), where("customerPhone", "==", cleanPhone)),
+          ];
+          const results = await Promise.all(phoneQueries.map((q) => getDocs(q).catch(() => ({ docs: [] }))));
+          const phoneDocsMap = new Map();
+          results.forEach((snap) => {
+            (snap.docs || []).forEach((d) => {
+              phoneDocsMap.set(d.id, { firestoreId: d.id, ...d.data() });
+            });
+          });
+          const customerJobs = Array.from(phoneDocsMap.values());
+
+          if (customerJobs.length > 0) {
+            // Check if numeric part of input matches any job
+            const numericInput = rawJobId.replace(/\D/g, "");
+            let numberMatch = null;
+            if (numericInput) {
+              numberMatch = customerJobs.find((j) => {
+                const jNum = String(j.id || j.jobId || j.firestoreId || "").replace(/\D/g, "");
+                return jNum === numericInput || jNum.endsWith(numericInput);
+              });
+            }
+
+            if (numberMatch) {
+              const phones = extractDocPhones(numberMatch);
+              const last3 = numberMatch.registeredPhoneLast3 || (phones[0] ? phones[0].slice(-3) : cleanPhone.slice(-3));
+              const canonicalJobId = numberMatch.id || numberMatch.jobId || numberMatch.firestoreId;
+              repairData = normalizeRepairDoc(canonicalJobId, numberMatch, last3, numberMatch.firestoreId, "repairJobs");
+            } else {
+              setCustomerRepairsList(customerJobs);
+              setSearched(true);
+              setRepair(null);
+              setError(
+                language === "hi"
+                  ? `Job ID '${rawJobId}' नहीं मिला, लेकिन आपके मोबाइल नंबर (+91 ${cleanPhone}) पर ${customerJobs.length} रिपेयर मिली हैं। कृपया नीचे अपनी रिपेयर चुनें:`
+                  : `We couldn't find Job ID '${rawJobId}', but we found ${customerJobs.length} repair(s) registered under your mobile number (+91 ${cleanPhone}). Select your repair below:`
+              );
+              return;
+            }
+          } else {
+            const notFoundMsg = language === "hi"
+              ? `Job ID '${rawJobId || "दर्ज आईडी"}' और मोबाइल नंबर (+91 ${cleanPhone}) से कोई रिपेयर नहीं मिली। कृपया अपनी रसीद या SMS पर सही Job ID जांचें (जैसे AT-1006)।`
+              : `We couldn't find a repair matching Job ID '${rawJobId || "entered ID"}' and registered mobile (+91 ${cleanPhone}). Please check your receipt or SMS for your Job ID (e.g. AT-1006).`;
+            throw new Error(notFoundMsg);
+          }
+        }
+      }
+
+      if (repairData) {
+        setRepair(repairData);
+        setSearched(true);
+        setError("");
+        setCustomerRepairsList([]);
+      } else {
+        throw new Error(text.errors.notFound);
+      }
+    } catch (requestError) {
+      console.error("Track repair error:", requestError);
+      setRepair(null);
+      setSearched(true);
+      setError(
+        requestError.message === text.errors.notFound
+          ? text.errors.notFound
+          : getFirebaseErrorMessage(requestError, text)
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* =======================================================
+     AUTO LOOKUP FROM URL PARAMS
+  ======================================================= */
+
+  useEffect(() => {
+    const urlJobId = searchParams.get("jobId");
+    const urlPhone = searchParams.get("phone");
+    if (urlJobId && urlPhone) {
+      const timer = setTimeout(() => {
+        executeLookup(urlJobId.toUpperCase(), normalizeIndianPhone(urlPhone));
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* =======================================================
+     REALTIME LISTENER ON ACTIVE REPAIR
+  ======================================================= */
+
+  useEffect(() => {
+    if (!repair?.jobId) return;
+
+    const docTargetId = repair.firestoreId || repair.jobId;
+    const targetCollection = repair.collectionName || "repairJobs";
+
+    const unsub = onSnapshot(
+      doc(db, targetCollection, docTargetId),
+      (snap) => {
+        if (snap.exists()) {
+          const liveData = snap.data();
+          const phones = extractDocPhones(liveData);
+          const last3 = liveData.registeredPhoneLast3 || (phones[0] ? phones[0].slice(-3) : repair.registeredPhoneLast3);
+          const normalized = normalizeRepairDoc(repair.jobId, liveData, last3, snap.id, targetCollection);
+          setRepair((prev) => ({
+            ...prev,
+            ...normalized,
+          }));
+        }
+      },
+      (err) => console.error("Realtime track sync error:", err)
+    );
+
+    return () => unsub();
+  }, [repair?.jobId, repair?.firestoreId, repair?.collectionName, repair?.registeredPhoneLast3]);
 
   /* =======================================================
      SECURE TRACKING REQUEST
   ======================================================= */
 
-  const handleSubmit = async (
-    event
-  ) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (loading) {
-      return;
-    }
-
-    const validationError =
-      validate();
-
-    if (validationError) {
-      setError(
-        validationError
-      );
-
-      setRepair(null);
-      setSearched(false);
-
-      return;
-    }
-
-    setLoading(true);
-
-    setError("");
-    setRepair(null);
-    setSearched(false);
-
-    try {
-      /*
-        IMPORTANT:
-
-        Public browser does NOT query
-        repairJobs directly.
-
-        All lookup + phone verification +
-        customer-safe response filtering
-        happens inside Cloud Function.
-      */
-
-      const trackRepair =
-        httpsCallable(
-          functions,
-          "trackRepair"
-        );
-
-      const result =
-        await trackRepair({
-          jobId:
-            normalizeJobId(
-              jobId
-            ),
-
-          phone:
-            normalizedPhone,
-        });
-
-      const payload =
-        result?.data;
-
-      if (
-        !payload?.success ||
-        !payload?.repair
-      ) {
-        throw new Error(
-          text.search.invalidResponse
-        );
-      }
-
-      setRepair(
-        payload.repair
-      );
-
-      setSearched(true);
-    } catch (
-      requestError
-    ) {
-      console.error(
-        "Track repair error:",
-        requestError
-      );
-
-      setRepair(null);
-      setSearched(true);
-
-      setError(
-        getFirebaseErrorMessage(
-          requestError,
-          text
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
+    if (loading) return;
+    executeLookup(jobId, normalizedPhone);
   };
 
   /* =======================================================
@@ -1117,21 +1599,15 @@ function TrackRepair() {
     setSearched(false);
     setJobId("");
     setPhone("");
+    setCustomerRepairsList([]);
   };
 
   /* =======================================================
      CURRENT STAGE
   ======================================================= */
 
-  const activeStageIndex =
-    repair
-      ? getStageIndex(
-          repair.repairStage
-        )
-      : 0;
-
   /* =======================================================
-     OPTIONAL CUSTOMER DATA
+     OPTIONAL CUSTOMER DATA & APPROVAL STATE
   ======================================================= */
 
   const estimate =
@@ -1143,6 +1619,32 @@ function TrackRepair() {
 
   const payment =
     repair?.payment || null;
+
+  const rawStageIndex =
+    repair
+      ? getStageIndex(
+          repair.repairStage
+        )
+      : 0;
+
+  const isWaitingApproval = Boolean(
+    repair && (
+      repair.repairStage === "Waiting Customer Approval" ||
+      repair.customerStatusCode === "WAITING_CUSTOMER_APPROVAL" ||
+      (customerApproval && customerApproval.status === "Pending") ||
+      (rawStageIndex === 2 && (!customerApproval || customerApproval.status !== "Approved"))
+    )
+  );
+
+  const activeStageIndex = isWaitingApproval ? 2 : rawStageIndex;
+
+  const isApproved = Boolean(
+    repair && !isWaitingApproval && (
+      (customerApproval && customerApproval.status === "Approved") ||
+      repair.repairStage === "Approved" ||
+      activeStageIndex >= 3
+    )
+  );
 
   return (
     <div className="at-track-page">
@@ -1411,6 +1913,46 @@ function TrackRepair() {
                         <span>
                           {error}
                         </span>
+                      </div>
+                    )}
+
+                    {/* MATCHED REPAIRS LIST FOR REGISTERED MOBILE */}
+                    {customerRepairsList.length > 0 && (
+                      <div className="at-track-found-list">
+                        <div className="at-track-found-list__title">
+                          {language === "hi"
+                            ? "रजिस्टर्ड मोबाइल से मिली रिपेयर (ट्रैक करने के लिए चुनें):"
+                            : "Registered repairs found (Click to track):"}
+                        </div>
+                        <div className="at-track-found-list__items">
+                          {customerRepairsList.map((item) => {
+                            const itemJobId = item.id || item.jobId || item.firestoreId;
+                            const itemDevice = item.device || `${item.brand || ""} ${item.model || ""}`.trim() || "Customer Device";
+                            const itemStage = item.repairStage || item.status || "Device Received";
+                            return (
+                              <button
+                                key={itemJobId}
+                                type="button"
+                                className="at-track-found-card"
+                                onClick={() => {
+                                  setJobId(itemJobId);
+                                  const itemPhone = item.phone || item.mobileNumber || item.customerPhone || phone;
+                                  setPhone(formatPhoneInput(itemPhone));
+                                  executeLookup(itemJobId, normalizeIndianPhone(itemPhone));
+                                }}
+                              >
+                                <div className="at-track-found-card__info">
+                                  <strong className="at-track-found-card__id">{itemJobId}</strong>
+                                  <span className="at-track-found-card__device">{itemDevice}</span>
+                                </div>
+                                <div className="at-track-found-card__status">
+                                  <span className="at-track-found-card__badge">{itemStage}</span>
+                                  <ArrowRight size={14} />
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 
@@ -1762,6 +2304,44 @@ function TrackRepair() {
                                         .currentStageMessage}
                                 </p>
                               )}
+
+                              {/* INLINE CUSTOMER APPROVAL DETAILS: PROBLEM, COST & CALL RECEPTIONIST */}
+                              {isWaitingApproval && stage === "Waiting Customer Approval" && (
+                                <div className="at-track-step-approval" id="step-customer-approval">
+                                  <div className="at-track-step-approval__grid">
+                                    <div className="at-track-step-approval__item">
+                                      <span className="at-track-step-approval__label">
+                                        {language === "hi" ? "समस्या (Problem)" : "Problem"}
+                                      </span>
+                                      <strong className="at-track-step-approval__value">
+                                        {repair.problem || (language === "hi" ? "डायग्नोसिस पूर्ण" : "Diagnosis complete")}
+                                      </strong>
+                                    </div>
+
+                                    <div className="at-track-step-approval__item">
+                                      <span className="at-track-step-approval__label">
+                                        {language === "hi" ? "अनुमानित खर्च (Cost)" : "Cost"}
+                                      </span>
+                                      <strong className="at-track-step-approval__value at-track-step-approval__value--cost">
+                                        {formatMoney(repair.estimatedCost || repair.estimate?.total || 0)}
+                                      </strong>
+                                    </div>
+                                  </div>
+
+                                  <a
+                                    href={`tel:${SHOP_PHONE}`}
+                                    className="at-track-step-approval__btn"
+                                    id="btn-call-receptionist-inline"
+                                  >
+                                    <PhoneCall size={16} />
+                                    <span>
+                                      {language === "hi"
+                                        ? `मंजूरी देने के लिए कॉल करें: ${SHOP_PHONE_DISPLAY}`
+                                        : `Call Receptionist to Approve: ${SHOP_PHONE_DISPLAY}`}
+                                    </span>
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
@@ -1775,8 +2355,8 @@ function TrackRepair() {
                 <aside className="at-track-live-side">
                   {/* ESTIMATE */}
 
-                  {estimate && (
-                    <div className="at-track-info-card">
+                  {(estimate || repair.estimatedCost > 0) && (
+                    <div className="at-track-info-card" id="sidebar-repair-estimate">
                       <div className="at-track-info-card__heading">
                         <Wrench
                           size={17}
@@ -1801,133 +2381,195 @@ function TrackRepair() {
                         </div>
                       </div>
 
-                      {estimate.diagnosisSummary && (
-                        <div className="at-track-info-row at-track-info-row--stack">
-                          <span>
-                            {
-                              text
-                                .estimate
-                                .diagnosis
-                            }
-                          </span>
+                      <div className="at-track-info-row at-track-info-row--stack">
+                        <span>
+                          {
+                            text
+                              .estimate
+                              .diagnosis
+                          }
+                        </span>
 
-                          <strong>
-                            {
-                              estimate.diagnosisSummary
-                            }
-                          </strong>
-                        </div>
-                      )}
+                        <strong>
+                          {
+                            repair.problem ||
+                            estimate?.diagnosisSummary ||
+                            "Complete device diagnosis"
+                          }
+                        </strong>
+                      </div>
 
-                      {estimate.partsRequired && (
-                        <div className="at-track-info-row at-track-info-row--stack">
-                          <span>
-                            {
-                              text
-                                .estimate
-                                .parts
-                            }
-                          </span>
+                      <div className="at-track-info-row at-track-info-row--stack">
+                        <span>
+                          {
+                            text
+                              .estimate
+                              .parts
+                          }
+                        </span>
 
-                          <strong>
-                            {
-                              estimate.partsRequired
-                            }
-                          </strong>
-                        </div>
-                      )}
+                        <strong>
+                          {
+                            repair.partsRequired ||
+                            estimate?.partsRequired ||
+                            (language === "hi" ? "सर्विस में शामिल" : "Included in service")
+                          }
+                        </strong>
+                      </div>
 
-                      {Number(
-                        estimate.total
-                      ) > 0 && (
+                      <div className="at-track-info-row">
+                        <span>
+                          {
+                            text
+                              .estimate
+                              .total
+                          }
+                        </span>
+
+                        <strong style={{ color: "var(--track-yellow)", fontSize: "16px" }}>
+                          {formatMoney(
+                            repair.estimatedCost ||
+                            estimate?.total ||
+                            0
+                          )}
+                        </strong>
+                      </div>
+
+                      {Number(repair.receivedAmount) > 0 && (
                         <div className="at-track-info-row">
                           <span>
-                            {
-                              text
-                                .estimate
-                                .total
-                            }
+                            {text.approvalWindow.advanceLabel}
                           </span>
 
                           <strong>
                             {formatMoney(
-                              estimate.total
+                              repair.receivedAmount
                             )}
                           </strong>
                         </div>
                       )}
+
+                      <div className="at-track-info-row">
+                        <span>
+                          {text.approvalWindow.balanceLabel}
+                        </span>
+
+                        <strong style={{ color: "#fca5a5" }}>
+                          {formatMoney(
+                            repair.balanceAmount ||
+                            repair.estimatedCost ||
+                            0
+                          )}
+                        </strong>
+                      </div>
                     </div>
                   )}
 
                   {/* CUSTOMER APPROVAL */}
 
-                  {customerApproval && (
-                    <div className="at-track-info-card">
-                      <div className="at-track-info-card__heading">
+                  <div className="at-track-info-card" id="sidebar-customer-approval">
+                    <div className="at-track-info-card__heading">
+                      {isApproved ? (
                         <CheckCircle2
                           size={17}
+                          style={{ color: "#10b981" }}
                         />
+                      ) : (
+                        <Clock3
+                          size={17}
+                          style={{ color: "#f59e0b" }}
+                        />
+                      )}
 
-                        <div>
-                          <span>
-                            {
-                              text
-                                .approval
-                                .eyebrow
-                            }
-                          </span>
+                      <div>
+                        <span>
+                          {
+                            text
+                              .approval
+                              .eyebrow
+                          }
+                        </span>
 
-                          <strong>
-                            {getLocalizedStatus(
-                              customerApproval.status,
-                              language,
-                              text
-                                .approval
-                                .pending
-                            )}
-                          </strong>
-                        </div>
+                        <strong style={{ color: isApproved ? "#10b981" : "#f59e0b" }}>
+                          {isApproved
+                            ? text.approval.approved
+                            : (language === "hi" ? "कॉल की प्रतीक्षा" : "Awaiting Call")}
+                        </strong>
                       </div>
-
-                      {customerApproval.approvedAt && (
-                        <div className="at-track-info-row">
-                          <span>
-                            {
-                              text
-                                .approval
-                                .approved
-                            }
-                          </span>
-
-                          <strong>
-                            {formatDate(
-                              customerApproval.approvedAt,
-                              language
-                            )}
-                          </strong>
-                        </div>
-                      )}
-
-                      {customerApproval.rejectedAt && (
-                        <div className="at-track-info-row">
-                          <span>
-                            {
-                              text
-                                .approval
-                                .updated
-                            }
-                          </span>
-
-                          <strong>
-                            {formatDate(
-                              customerApproval.rejectedAt,
-                              language
-                            )}
-                          </strong>
-                        </div>
-                      )}
                     </div>
-                  )}
+
+                    {isWaitingApproval && (
+                      <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                        <p style={{ margin: 0, fontSize: "12px", color: "#d1d5db", lineHeight: "1.5" }}>
+                          {language === "hi"
+                            ? "रिपेयर शुरू करवाने के लिए रिसेप्शनिस्ट को कॉल करें:"
+                            : "Call receptionist to confirm approval:"}
+                        </p>
+                        <a
+                          href={`tel:${SHOP_PHONE}`}
+                          className="at-track-sidebar-call-btn"
+                          id="sidebar-call-btn"
+                        >
+                          <PhoneCall size={14} />
+                          <span>{SHOP_PHONE_DISPLAY}</span>
+                        </a>
+                      </div>
+                    )}
+
+                    {customerApproval?.approvedAt && (
+                      <div className="at-track-info-row" style={{ marginTop: "12px" }}>
+                        <span>
+                          {
+                            text
+                              .approval
+                              .approved
+                          }
+                        </span>
+
+                        <strong>
+                          {formatDate(
+                            customerApproval.approvedAt,
+                            language
+                          )}
+                        </strong>
+                      </div>
+                    )}
+
+                    {isApproved && !customerApproval?.approvedAt && (
+                      <div className="at-track-info-row" style={{ marginTop: "12px" }}>
+                        <span>
+                          {
+                            text
+                              .approval
+                              .approved
+                          }
+                        </span>
+
+                        <strong style={{ color: "#10b981" }}>
+                          {language === "hi" ? "कॉल द्वारा स्वीकृत" : "Confirmed via Call"}
+                        </strong>
+                      </div>
+                    )}
+
+                    {customerApproval?.rejectedAt && (
+                      <div className="at-track-info-row">
+                        <span>
+                          {
+                            text
+                              .approval
+                              .updated
+                          }
+                        </span>
+
+                        <strong>
+                          {formatDate(
+                            customerApproval.rejectedAt,
+                            language
+                          )}
+                        </strong>
+                      </div>
+                    )}
+                  </div>
 
                   {/* PAYMENT */}
 

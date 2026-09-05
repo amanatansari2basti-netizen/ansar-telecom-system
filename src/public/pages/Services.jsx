@@ -518,24 +518,23 @@ function Services() {
           <div className="at-services-shell">
             <div className="at-services-work__grid">
               <div className="at-services-work__visual">
-                <div className="at-services-photo-slot">
-                  <div>
-                    <Wrench
-                      size={30}
-                    />
+                <div className="at-detail-photo-card">
+                  <img
+                    src="/images/repair-work.jpg"
+                    alt="Ansar Telecom Repair Workbench - Motherboard & Hardware Precision Repair"
+                    className="at-detail-photo-img"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="at-detail-photo-overlay">
+                    <div className="at-detail-photo-badge">
+                      <Wrench size={16} />
+                      <span>{text.work}</span>
+                    </div>
+                    <div className="at-detail-photo-meta">
+                      <strong>{text.workPhoto}</strong>
+                      <span>{text.workTypes}</span>
+                    </div>
                   </div>
-
-                  <span>
-                    {text.work}
-                  </span>
-
-                  <strong>
-                    {text.workPhoto}
-                  </strong>
-
-                  <small>
-                    {text.workTypes}
-                  </small>
                 </div>
               </div>
 

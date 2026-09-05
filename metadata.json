@@ -1,0 +1,8 @@
+{
+  "name": "Ansar Telecom System",
+  "description": "Telecom repair management and tracking system with role-based access for owners, technicians, receptionists, and riders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

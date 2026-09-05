@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
@@ -15,6 +16,7 @@ import {
 } from "../firebase/firebase";
 
 const CreateOwner = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -34,22 +36,30 @@ const CreateOwner = () => {
 
       const user = credential.user;
 
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          uid: user.uid,
-          name: "Aqib Ansari",
-          email: user.email,
-          phone: "",
-          role: "owner",
-          status: "active",
-          createdAt: serverTimestamp(),
-        }
+      const ownerData = {
+        uid: user.uid,
+        name: "Aqib Ansari",
+        email: user.email,
+        phone: "",
+        role: "owner",
+        status: "active",
+        createdAt: serverTimestamp(),
+      };
+
+      await setDoc(doc(db, "users", user.uid), ownerData);
+
+      localStorage.setItem(
+        "ansar_telecom_session",
+        JSON.stringify(ownerData)
       );
 
       setMessage(
-        "Owner account created successfully."
+        "Owner account created successfully. Redirecting..."
       );
+
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 600);
     } catch (error) {
       console.error(error);
       setMessage(error.message);

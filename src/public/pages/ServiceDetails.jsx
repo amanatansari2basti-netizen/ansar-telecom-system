@@ -423,8 +423,7 @@ function ServiceDetails() {
               {text.all}
             </Link>
 
-            <div className="at-detail-hero__grid">
-              <div className="at-detail-hero__content">
+            <div className="at-detail-hero__content">
                 <div className="at-detail-hero__meta">
                   <span>
                     {
@@ -495,34 +494,6 @@ function ServiceDetails() {
                   </Link>
                 </div>
               </div>
-
-              <div className="at-detail-hero__visual">
-                <div className="at-detail-photo-slot">
-                  <div>
-                    <Icon
-                      size={34}
-                      strokeWidth={
-                        1.5
-                      }
-                    />
-                  </div>
-
-                  <span>
-                    {text.photo}
-                  </span>
-
-                  <strong>
-                    {
-                      service.photoLabel
-                    }
-                  </strong>
-
-                  <small>
-                    {text.photoText}
-                  </small>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -818,76 +789,6 @@ function ServiceDetails() {
                   service.importantNote
                 }
               </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="at-detail-gallery-preview">
-          <div className="at-services-shell">
-            <div className="at-detail-section-heading">
-              <span className="at-services-eyebrow">
-                {text.realWork}
-              </span>
-
-              <h2>
-                {
-                  text.realWorkTitle
-                }
-                <br />
-                <span>
-                  {
-                    text.realWorkAccent
-                  }
-                </span>
-              </h2>
-            </div>
-
-            <div className="at-detail-gallery-grid">
-              <div className="at-detail-gallery-slot at-detail-gallery-slot--large">
-                <Icon
-                  size={31}
-                />
-
-                <span>
-                  {text.before}
-                </span>
-
-                <strong>
-                  {text.mainPhoto}
-                </strong>
-              </div>
-
-              <div className="at-detail-gallery-slot">
-                <Wrench
-                  size={26}
-                />
-
-                <span>
-                  {
-                    text.repairProcess
-                  }
-                </span>
-
-                <strong>
-                  {
-                    text.processPhoto
-                  }
-                </strong>
-              </div>
-
-              <div className="at-detail-gallery-slot">
-                <Check
-                  size={26}
-                />
-
-                <span>
-                  {text.completed}
-                </span>
-
-                <strong>
-                  {text.afterPhoto}
-                </strong>
-              </div>
             </div>
           </div>
         </section>

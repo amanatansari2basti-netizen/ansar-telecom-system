@@ -373,13 +373,6 @@ function PublicNavbar() {
             </div>
 
             <Link
-              to="/login"
-              className="at-public-nav__staff"
-            >
-              {text.staff}
-            </Link>
-
-            <Link
               to="/pick-drop"
               className="at-public-nav__cta"
             >
@@ -585,14 +578,6 @@ function PublicNavbar() {
               <ArrowUpRight
                 size={16}
               />
-            </Link>
-
-            <Link
-              to="/login"
-              onClick={closeMenu}
-              className="at-mobile-menu__staff"
-            >
-              {text.staffLogin}
             </Link>
 
             <span>

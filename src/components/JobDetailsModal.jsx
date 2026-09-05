@@ -15,6 +15,7 @@ import {
   NotebookText,
   PackageCheck,
   Phone,
+  Printer,
   RotateCcw,
   Save,
   ShieldCheck,
@@ -36,6 +37,8 @@ import {
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
+
+import ThermalReceiptModal from "./ThermalReceiptModal";
 
 import "../jobDetailsModal.css";
 
@@ -272,6 +275,8 @@ const JobDetailsModal = ({
   onUpdateJob,
 }) => {
   const [technicians, setTechnicians] = useState([]);
+
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -1962,13 +1967,37 @@ const JobDetailsModal = ({
             </p>
           </div>
 
-          <button
-            type="button"
-            className="details-close-button"
-            onClick={onClose}
-          >
-            <X size={20} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              type="button"
+              onClick={() => setIsReceiptOpen(true)}
+              title="Print Thermal Receipt (80mm / 58mm)"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 13px",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#1e293b",
+                backgroundColor: "#f8fafc",
+                border: "1px solid #cbd5e1",
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              <Printer size={15} />
+              <span>Print Receipt</span>
+            </button>
+
+            <button
+              type="button"
+              className="details-close-button"
+              onClick={onClose}
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="details-modal-content">
@@ -3585,6 +3614,15 @@ const JobDetailsModal = ({
 
         </div>
       </div>
+
+      {isReceiptOpen && job && (
+        <ThermalReceiptModal
+          isOpen={isReceiptOpen}
+          onClose={() => setIsReceiptOpen(false)}
+          job={job}
+          autoPrint={false}
+        />
+      )}
     </div>
   );
 };

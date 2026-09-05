@@ -1,218 +1,192 @@
-.at-flow {
+/* =========================================================
+   CLEAN MINIMAL PICK & DROP FLOW ANIMATION
+========================================================= */
+
+.at-clean-flow {
   display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   width: 100%;
   height: 100%;
-  padding: 32px;
-  flex-direction: column;
-  justify-content: center;
-  gap: 48px;
-  color: #fff;
-  background:
-    linear-gradient(
-      rgba(17, 18, 15, 0.42),
-      rgba(17, 18, 15, 0.6)
-    ),
-    repeating-linear-gradient(
-      135deg,
-      #3b3c36 0,
-      #3b3c36 30px,
-      #353630 30px,
-      #353630 60px
-    );
-}
-
-.at-flow__badge {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: center;
-}
-
-.at-flow__badge span {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: rgba(245, 196, 0, 0.85);
-}
-
-.at-flow__badge strong {
-  font-family: "Manrope", sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.at-flow__row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.at-flow__step {
-  display: flex;
+  min-height: 480px;
+  padding: 36px 30px 24px;
+  background: #171813;
+  color: #ffffff;
+  border-radius: 4px;
   position: relative;
-  width: 90px;
+  overflow: hidden;
+}
+
+/* Stage Area */
+.at-clean-flow__stage {
+  position: relative;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  flex: 1;
   text-align: center;
+  padding: 20px 0;
 }
 
-.at-flow__step span {
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.55);
-  transition: color 0.4s ease;
-}
-
-.at-flow__node {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  flex-shrink: 0;
-  place-items: center;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-  color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.04);
-  transition:
-    border-color 0.4s ease,
-    color 0.4s ease,
-    background 0.4s ease,
-    box-shadow 0.4s ease,
-    transform 0.4s ease;
-}
-
-.at-flow__connector {
+/* Progress track line in the background of stage */
+.at-clean-flow__track {
   position: absolute;
-  top: 23px;
-  left: calc(50% + 23px);
-  width: calc(100% + 4px);
-  height: 2px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.14);
+  top: 60px;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 1;
 }
 
-.at-flow__connector-fill {
-  width: 0%;
+.at-clean-flow__track-fill {
   height: 100%;
-  background: var(--at-yellow, #f5c400);
-  animation: at-flow-fill 6.4s ease-in-out infinite;
-  animation-delay: inherit;
+  background: var(--at-yellow, #ebbe59);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.at-flow__step .at-flow__node {
-  animation: at-flow-node 6.4s ease-in-out infinite;
-  animation-delay: inherit;
+/* Central Graphic Box */
+.at-clean-flow__centerpiece {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 380px;
+  animation: atFadeIn 0.4s ease-out;
 }
 
-.at-flow__step span {
-  animation: at-flow-label 6.4s ease-in-out infinite;
-  animation-delay: inherit;
-}
-
-@keyframes at-flow-node {
-  0%,
-  6% {
-    border-color: rgba(255, 255, 255, 0.25);
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: none;
-    transform: scale(1);
+@keyframes atFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
-
-  10%,
-  20% {
-    border-color: var(--at-yellow, #f5c400);
-    color: #191a15;
-    background: var(--at-yellow, #f5c400);
-    box-shadow: 0 0 0 6px rgba(245, 196, 0, 0.14);
-    transform: scale(1.08);
-  }
-
-  30%,
-  100% {
-    border-color: rgba(255, 255, 255, 0.35);
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: none;
-    transform: scale(1);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes at-flow-label {
-  0%,
-  6% {
-    color: rgba(255, 255, 255, 0.55);
-  }
-
-  10%,
-  30% {
-    color: #fff;
-  }
-
-  40%,
-  100% {
-    color: rgba(255, 255, 255, 0.75);
-  }
+.at-clean-flow__icon-halo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(235, 190, 89, 0.35);
+  display: grid;
+  place-items: center;
+  color: var(--at-yellow, #ebbe59);
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
-@keyframes at-flow-fill {
-  0%,
-  14% {
-    width: 0%;
-  }
-
-  26%,
-  100% {
-    width: 100%;
-  }
+.at-clean-flow__badge {
+  margin-bottom: 10px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .at-flow__step,
-  .at-flow__node,
-  .at-flow__connector-fill {
-    animation: none !important;
-  }
-
-  .at-flow__node {
-    border-color: var(--at-yellow, #f5c400);
-    color: #191a15;
-    background: var(--at-yellow, #f5c400);
-  }
-
-  .at-flow__connector-fill {
-    width: 100%;
-  }
+.at-clean-flow__step-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--at-yellow, #ebbe59);
 }
 
-@media (max-width: 640px) {
-  .at-flow {
-    padding: 22px;
-    gap: 30px;
-  }
+.at-clean-flow__title {
+  font-family: "Manrope", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
 
-  .at-flow__badge strong {
-    font-size: 15px;
-  }
+.at-clean-flow__subtitle {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.65);
+}
 
-  .at-flow__step {
-    width: 68px;
-  }
+/* Bottom 4-step Tabs */
+.at-clean-flow__footer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 20px;
+}
 
-  .at-flow__node {
-    width: 38px;
-    height: 38px;
-  }
+.at-clean-flow__tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+}
 
-  .at-flow__connector {
-    top: 19px;
-    left: calc(50% + 19px);
-  }
+.at-clean-flow__tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
 
-  .at-flow__step span {
-    font-size: 8px;
+.at-clean-flow__tab.is-active {
+  background: rgba(235, 190, 89, 0.1);
+  border-color: var(--at-yellow, #ebbe59);
+  color: #ffffff;
+}
+
+.at-clean-flow__tab.is-passed {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.at-clean-flow__tab-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.at-clean-flow__tab.is-active .at-clean-flow__tab-icon {
+  color: var(--at-yellow, #ebbe59);
+}
+
+.at-clean-flow__tab-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.at-clean-flow__tab-num {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.at-clean-flow__tab-title {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .at-clean-flow {
+    padding: 24px 16px 16px;
+    min-height: 420px;
+  }
+  .at-clean-flow__footer {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
 }

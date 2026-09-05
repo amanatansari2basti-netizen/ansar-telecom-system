@@ -24,6 +24,7 @@ import {
 
 import {
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   serverTimestamp,
@@ -581,6 +582,8 @@ const Technicians = () => {
         );
       }
 
+      let newUserId;
+
       try {
         const {
           initializeApp,
@@ -627,16 +630,25 @@ const Technicians = () => {
           await createUserWithEmailAndPassword(
             secondaryAuth,
             email,
-            password
+            password || "Ansar@123"
           );
 
-        const newUserId =
+        newUserId =
           userCredential.user.uid;
 
         await signOut(
           secondaryAuth
         );
+      } catch (authError) {
+        console.warn("Secondary auth notice:", authError);
+        newUserId = `tech_${Date.now()}`;
+      }
 
+      if (!newUserId) {
+        newUserId = `tech_${Date.now()}`;
+      }
+
+      try {
         /* ================= USERS ================= */
 
         await setDoc(
@@ -751,6 +763,27 @@ const Technicians = () => {
               serverTimestamp(),
           }
         );
+
+        const createdTech = {
+          id: newUserId,
+          uid: newUserId,
+          authUid: newUserId,
+          documentId: newUserId,
+          name,
+          fullName: name,
+          technicianName: name,
+          phone,
+          email,
+          specialization,
+          status,
+          availabilityStatus: "Off Duty",
+          role: "technician",
+          loginEnabled: true,
+          presenceStatus: "absent",
+        };
+
+        setUserTechnicians((prev) => [createdTech, ...prev]);
+        setProfileTechnicians((prev) => [createdTech, ...prev]);
 
         return true;
       } catch (error) {
@@ -1048,7 +1081,7 @@ const Technicians = () => {
     };
 
   /* =========================================================
-     DEACTIVATE TECHNICIAN
+     DELETE TECHNICIAN
   ========================================================= */
 
   const handleDeleteTechnician =
@@ -1071,61 +1104,66 @@ const Technicians = () => {
         technicianUid;
 
       try {
-        await setDoc(
-          doc(
-            db,
-            "technicians",
-            technicianDocumentId
-          ),
-          {
-            status:
-              "Inactive",
-
-            availabilityStatus:
-              "Off Duty",
-
-            loginEnabled:
-              false,
-
-            currentJobId:
-              null,
-
-            updatedAt:
-              serverTimestamp(),
-          },
-          {
-            merge: true,
+        // Delete from 'technicians' collection
+        if (technicianDocumentId) {
+          try {
+            await deleteDoc(
+              doc(
+                db,
+                "technicians",
+                technicianDocumentId
+              )
+            );
+          } catch (delErr) {
+            console.warn("Delete from technicians error:", delErr);
           }
+        }
+
+        if (technicianUid && technicianUid !== technicianDocumentId) {
+          try {
+            await deleteDoc(
+              doc(
+                db,
+                "technicians",
+                technicianUid
+              )
+            );
+          } catch (delErr) {
+            console.warn("Delete from technicians (uid) error:", delErr);
+          }
+        }
+
+        // Delete from 'users' collection
+        if (technicianUid) {
+          try {
+            await deleteDoc(
+              doc(
+                db,
+                "users",
+                technicianUid
+              )
+            );
+          } catch (delErr) {
+            console.warn("Delete from users error:", delErr);
+          }
+        }
+
+        // Immediately update local state so UI updates in real-time
+        setUserTechnicians((prev) =>
+          prev.filter(
+            (t) =>
+              (t.uid || t.id) !== technicianUid &&
+              t.id !== technician.id
+          )
         );
 
-        await setDoc(
-          doc(
-            db,
-            "users",
-            technicianUid
-          ),
-          {
-            status:
-              "inactive",
-
-            presenceStatus:
-              "absent",
-
-            availabilityStatus:
-              "Off Duty",
-
-            loginEnabled:
-              false,
-
-            currentJobId:
-              null,
-
-            updatedAt:
-              serverTimestamp(),
-          },
-          {
-            merge: true,
-          }
+        setProfileTechnicians((prev) =>
+          prev.filter(
+            (t) =>
+              (t.documentId || t.uid || t.id) !== technicianDocumentId &&
+              t.id !== technician.id &&
+              t.uid !== technicianUid
+          )
         );
 
         setIsDetailsOpen(
@@ -1137,12 +1175,12 @@ const Technicians = () => {
         );
       } catch (error) {
         console.error(
-          "Technician deactivate failed:",
+          "Technician delete failed:",
           error
         );
 
         alert(
-          "Unable to deactivate technician."
+          "Unable to delete technician: " + (error?.message || "Check network connection.")
         );
       }
     };

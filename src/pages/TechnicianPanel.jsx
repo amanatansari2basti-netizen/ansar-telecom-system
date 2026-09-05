@@ -22,6 +22,7 @@ import {
 
 import {
   Activity,
+  AlertTriangle,
   ArrowRightLeft,
   BriefcaseBusiness,
   CalendarDays,
@@ -37,6 +38,7 @@ import {
   Sparkles,
   TimerReset,
   Undo2,
+  User,
   Wrench,
   X,
 } from "lucide-react";
@@ -152,6 +154,30 @@ const getRepairStage = (job) => {
 
     default:
       return REPAIR_STAGES.RECEIVED;
+  }
+};
+
+const getStageBadgeClass = (stage) => {
+  switch (stage) {
+    case REPAIR_STAGES.RECEIVED:
+      return "tp-status-received";
+    case REPAIR_STAGES.DIAGNOSIS:
+      return "tp-status-diagnosis";
+    case REPAIR_STAGES.WAITING_APPROVAL:
+      return "tp-status-approval";
+    case REPAIR_STAGES.APPROVED:
+      return "tp-status-approved";
+    case REPAIR_STAGES.REPAIR:
+      return "tp-status-repair";
+    case REPAIR_STAGES.WAITING_PART:
+      return "tp-status-part";
+    case REPAIR_STAGES.TESTING:
+      return "tp-status-testing";
+    case REPAIR_STAGES.READY:
+    case REPAIR_STAGES.DELIVERED:
+      return "tp-status-ready";
+    default:
+      return "tp-status-default";
   }
 };
 
@@ -630,17 +656,6 @@ const TechnicianPanel = () => {
       currentUser,
       technicianName,
     ]);
-
-  const pendingJobs =
-    useMemo(
-      () =>
-        assignedJobs.filter(
-          (job) =>
-            job.status ===
-            "Pending"
-        ),
-      [assignedJobs]
-    );
 
   const inProgressJobs =
     useMemo(
@@ -2839,69 +2854,118 @@ const TechnicianPanel = () => {
                       key={job.id}
                     >
                       <div className="tp-job-head">
-                        <div>
-                          <span className="tp-job-id">
-                            {job.id}
-                          </span>
+                        <div className="tp-job-identity">
+                          <div className="tp-job-meta-row">
+                            <span className="tp-job-id">
+                              {job.id}
+                            </span>
 
-                          <h3>
+                            {job.priority && (
+                              <span
+                                className={`tp-priority-badge tp-priority-${job.priority.toLowerCase()}`}
+                              >
+                                {job.priority.toLowerCase() ===
+                                  "urgent" && (
+                                  <AlertTriangle
+                                    size={11}
+                                  />
+                                )}
+                                {job.priority}
+                              </span>
+                            )}
+                          </div>
+
+                          <h3 className="tp-job-device-name">
                             {getDeviceName(
                               job
                             )}
                           </h3>
 
-                          <p>
-                            {getCustomerName(
-                              job
-                            )}
+                          <p className="tp-job-customer">
+                            <User size={13} />
+                            <span>
+                              {getCustomerName(
+                                job
+                              )}
+                            </span>
                           </p>
                         </div>
 
-                        <span className="tp-job-status">
-                          {stage}
-                        </span>
+                        <div className="tp-job-status-wrap">
+                          <span
+                            className={`tp-job-status ${getStageBadgeClass(
+                              stage
+                            )}`}
+                          >
+                            <span className="tp-status-dot" />
+                            {stage}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="tp-job-info-grid">
-                        <div>
-                          <span>
+                        <div className="tp-info-cell">
+                          <span className="tp-info-label">
                             Problem
                           </span>
 
-                          <strong>
+                          <strong className="tp-info-val tp-info-val-issue">
                             {getProblem(
                               job
                             )}
                           </strong>
                         </div>
 
-                        <div>
-                          <span>
+                        <div className="tp-info-cell">
+                          <span className="tp-info-label">
                             Priority
                           </span>
 
-                          <strong>
-                            {job.priority ||
-                              "Normal"}
+                          <strong className="tp-info-val">
+                            <span
+                              className={`tp-priority-tag tp-priority-${(
+                                job.priority ||
+                                "normal"
+                              ).toLowerCase()}`}
+                            >
+                              {job.priority ||
+                                "Normal"}
+                            </span>
                           </strong>
                         </div>
 
-                        <div>
-                          <span>
+                        <div className="tp-info-cell">
+                          <span className="tp-info-label">
                             Repair Stage
                           </span>
 
-                          <strong>
+                          <strong className="tp-info-val tp-info-val-stage">
                             {stage}
                           </strong>
                         </div>
 
-                        <div>
-                          <span>
+                        <div className="tp-info-cell">
+                          <span className="tp-info-label">
                             Active Time
                           </span>
 
-                          <strong>
+                          <strong
+                            className={`tp-info-val tp-timer-display ${
+                              job.status ===
+                              "In Progress"
+                                ? "is-running"
+                                : "is-idle"
+                            }`}
+                          >
+                            <Clock3
+                              size={13}
+                              className={
+                                job.status ===
+                                "In Progress"
+                                  ? "tp-spin-slow"
+                                  : ""
+                              }
+                            />
                             {formatSeconds(
                               timer
                             )}
@@ -2909,215 +2973,67 @@ const TechnicianPanel = () => {
                         </div>
                       </div>
 
-                      {/* TRANSFER STATUS */}
+                      {/* TRANSFER STATUS BANNER */}
 
                       {transferPending && (
-                        <div
-                          style={{
-                            margin:
-                              "0 19px 14px",
-                            padding:
-                              "11px 12px",
-                            borderRadius:
-                              "10px",
-                            border:
-                              "1px solid #d9e4f5",
-                            background:
-                              "#f7faff",
-                            fontSize:
-                              "12px",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display:
-                                "flex",
-                              gap:
-                                "8px",
-                              alignItems:
-                                "center",
-                            }}
-                          >
-                            <Clock3
-                              size={15}
-                            />
-
-                            <strong>
-                              Transfer
-                              Request
-                              Pending
-                            </strong>
+                        <div className="tp-banner tp-banner-info">
+                          <div className="tp-banner-icon">
+                            <Clock3 size={16} />
                           </div>
 
-                          <p
-                            style={{
-                              margin:
-                                "6px 0 0",
-                            }}
-                          >
-                            Requested
-                            transfer to{" "}
+                          <div className="tp-banner-body">
                             <strong>
-                              {job
-                                .transferRequest
-                                ?.targetTechnicianName ||
-                                "selected technician"}
+                              Transfer Request Pending
                             </strong>
-                            . Waiting
-                            for Owner
-                            approval.
-                          </p>
+
+                            <p>
+                              Requested transfer to{" "}
+                              <strong>
+                                {job.transferRequest
+                                  ?.targetTechnicianName ||
+                                  "selected technician"}
+                              </strong>
+                              . Waiting for Owner approval.
+                            </p>
+                          </div>
                         </div>
                       )}
 
-                      {/* WORKFLOW ACTIONS */}
+                      {/* APPROVAL STATUS BANNER */}
 
-                      <div className="tp-job-actions">
-                        {job.status ===
-                          "Pending" && (
-                          <button
-                            className="tp-action-btn tp-action-dark"
-                            disabled={
-                              actionLoading ===
-                              `start-${job.id}`
-                            }
-                            onClick={() =>
-                              handleStartJob(
-                                job
-                              )
-                            }
-                          >
-                            <Play
-                              size={14}
-                            />
-                            Start Repair
-                          </button>
-                        )}
+                      {stage ===
+                        REPAIR_STAGES.WAITING_APPROVAL && (
+                        <div className="tp-banner tp-banner-warning">
+                          <div className="tp-banner-icon">
+                            <AlertTriangle size={16} />
+                          </div>
 
-                        {stage ===
-                          REPAIR_STAGES.DIAGNOSIS &&
-                          job.status ===
-                            "In Progress" && (
+                          <div className="tp-banner-body">
+                            <strong>
+                              Customer Approval Pending
+                            </strong>
+
+                            <p>
+                              Owner or Reception must confirm approval before repair can continue.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* WORKFLOW & SECONDARY ACTIONS FOOTER */}
+
+                      <div className="tp-job-footer">
+                        <div className="tp-job-primary-actions">
+                          {job.status ===
+                            "Pending" && (
                             <button
-                              className="tp-action-btn tp-action-dark"
-                              onClick={() =>
-                                openDiagnosis(
-                                  job
-                                )
-                              }
-                            >
-                              <Wrench
-                                size={14}
-                              />
-                              Diagnosis
-                            </button>
-                          )}
-
-                        {stage ===
-                          REPAIR_STAGES.REPAIR &&
-                          job.status ===
-                            "In Progress" && (
-                            <button
-                              className="tp-action-btn tp-action-dark"
+                              className="tp-action-btn tp-action-primary"
                               disabled={
-                                workflowLoading ===
-                                `testing-${job.id}`
+                                actionLoading ===
+                                `start-${job.id}`
                               }
                               onClick={() =>
-                                handleRepairComplete(
-                                  job
-                                )
-                              }
-                            >
-                              <CheckCircle2
-                                size={14}
-                              />
-                              Repair
-                              Complete
-                            </button>
-                          )}
-
-                        {stage ===
-                          REPAIR_STAGES.TESTING &&
-                          job.status ===
-                            "In Progress" && (
-                            <button
-                              className="tp-action-btn tp-action-dark"
-                              disabled={
-                                workflowLoading ===
-                                `ready-${job.id}`
-                              }
-                              onClick={() =>
-                                handleTestingComplete(
-                                  job
-                                )
-                              }
-                            >
-                              <CheckCircle2
-                                size={14}
-                              />
-                              Test Passed
-                              · Ready
-                            </button>
-                          )}
-
-                        {job.status ===
-                          "In Progress" && (
-                          <button
-                            className="tp-action-btn tp-action-soft"
-                            disabled={Boolean(
-                              actionLoading
-                            )}
-                            onClick={() =>
-                              handlePauseJob(
-                                job
-                              )
-                            }
-                          >
-                            <Pause
-                              size={14}
-                            />
-                            Pause
-                          </button>
-                        )}
-
-                        {stage ===
-                          REPAIR_STAGES.WAITING_PART &&
-                          job.status ===
-                            "Paused" && (
-                            <button
-                              className="tp-action-btn tp-action-dark"
-                              disabled={
-                                workflowLoading ===
-                                `part-${job.id}`
-                              }
-                              onClick={() =>
-                                handlePartReceived(
-                                  job
-                                )
-                              }
-                            >
-                              <RotateCcw
-                                size={14}
-                              />
-                              Part
-                              Received
-                            </button>
-                          )}
-
-                        {job.status ===
-                          "Paused" &&
-                          stage !==
-                            REPAIR_STAGES.WAITING_APPROVAL &&
-                          stage !==
-                            REPAIR_STAGES.WAITING_PART && (
-                            <button
-                              className="tp-action-btn tp-action-dark"
-                              disabled={Boolean(
-                                actionLoading
-                              )}
-                              onClick={() =>
-                                handleResumeJob(
+                                handleStartJob(
                                   job
                                 )
                               }
@@ -3125,50 +3041,216 @@ const TechnicianPanel = () => {
                               <Play
                                 size={14}
                               />
-                              Resume
+                              Start Repair
                             </button>
                           )}
-                      </div>
 
-                      {stage ===
-                        REPAIR_STAGES.WAITING_APPROVAL && (
-                        <div
-                          style={{
-                            margin:
-                              "0 19px 14px",
-                            padding:
-                              "11px 12px",
-                            borderRadius:
-                              "10px",
-                            background:
-                              "#fff8e8",
-                            border:
-                              "1px solid #f0ddb1",
-                            fontSize:
-                              "12px",
-                          }}
-                        >
-                          <strong>
-                            Customer
-                            approval
-                            pending.
-                          </strong>
+                          {stage ===
+                            REPAIR_STAGES.DIAGNOSIS &&
+                            job.status ===
+                              "In Progress" && (
+                              <button
+                                className="tp-action-btn tp-action-primary"
+                                onClick={() =>
+                                  openDiagnosis(
+                                    job
+                                  )
+                                }
+                              >
+                                <Wrench
+                                  size={14}
+                                />
+                                Diagnosis & Estimate
+                              </button>
+                            )}
 
-                          <p
-                            style={{
-                              margin:
-                                "4px 0 0",
+                          {stage ===
+                            REPAIR_STAGES.REPAIR &&
+                            job.status ===
+                              "In Progress" && (
+                              <button
+                                className="tp-action-btn tp-action-success"
+                                disabled={
+                                  workflowLoading ===
+                                  `testing-${job.id}`
+                                }
+                                onClick={() =>
+                                  handleRepairComplete(
+                                    job
+                                  )
+                                }
+                              >
+                                <CheckCircle2
+                                  size={14}
+                                />
+                                Repair Complete
+                              </button>
+                            )}
+
+                          {stage ===
+                            REPAIR_STAGES.TESTING &&
+                            job.status ===
+                              "In Progress" && (
+                              <button
+                                className="tp-action-btn tp-action-success"
+                                disabled={
+                                  workflowLoading ===
+                                  `ready-${job.id}`
+                                }
+                                onClick={() =>
+                                  handleTestingComplete(
+                                    job
+                                  )
+                                }
+                              >
+                                <CheckCircle2
+                                  size={14}
+                                />
+                                Test Passed · Ready
+                              </button>
+                            )}
+
+                          {job.status ===
+                            "In Progress" && (
+                            <button
+                              className="tp-action-btn tp-action-amber"
+                              disabled={Boolean(
+                                actionLoading
+                              )}
+                              onClick={() =>
+                                handlePauseJob(
+                                  job
+                                )
+                              }
+                            >
+                              <Pause
+                                size={14}
+                              />
+                              Pause
+                            </button>
+                          )}
+
+                          {stage ===
+                            REPAIR_STAGES.WAITING_PART &&
+                            job.status ===
+                              "Paused" && (
+                              <button
+                                className="tp-action-btn tp-action-primary"
+                                disabled={
+                                  workflowLoading ===
+                                  `part-${job.id}`
+                                }
+                                onClick={() =>
+                                  handlePartReceived(
+                                    job
+                                  )
+                                }
+                              >
+                                <RotateCcw
+                                  size={14}
+                                />
+                                Part Received
+                              </button>
+                            )}
+
+                          {job.status ===
+                            "Paused" &&
+                            stage !==
+                              REPAIR_STAGES.WAITING_APPROVAL &&
+                            stage !==
+                              REPAIR_STAGES.WAITING_PART && (
+                              <button
+                                className="tp-action-btn tp-action-primary"
+                                disabled={Boolean(
+                                  actionLoading
+                                )}
+                                onClick={() =>
+                                  handleResumeJob(
+                                    job
+                                  )
+                                }
+                              >
+                                <Play
+                                  size={14}
+                                />
+                                Resume
+                              </button>
+                            )}
+                        </div>
+
+                        <div className="tp-job-secondary-actions">
+                          <button
+                            className="tp-action-btn tp-action-soft"
+                            type="button"
+                            onClick={() => {
+                              setReturnJobId(
+                                returnJobId ===
+                                  job.id
+                                  ? null
+                                  : job.id
+                              );
+
+                              setTransferJobId(
+                                null
+                              );
                             }}
                           >
-                            Owner or
-                            Reception
-                            must confirm
-                            approval
-                            before repair
-                            can continue.
-                          </p>
+                            <Undo2
+                              size={13}
+                            />
+                            Return
+                          </button>
+
+                          {transferPending ? (
+                            <button
+                              className="tp-action-btn tp-action-soft tp-action-disabled"
+                              type="button"
+                              disabled
+                              title={`Waiting for Owner approval to transfer to ${
+                                job
+                                  .transferRequest
+                                  ?.targetTechnicianName ||
+                                "selected technician"
+                              }`}
+                            >
+                              <Clock3
+                                size={13}
+                              />
+                              Transfer Pending
+                            </button>
+                          ) : (
+                            <button
+                              className="tp-action-btn tp-action-soft"
+                              type="button"
+                              onClick={() => {
+                                setTransferJobId(
+                                  transferJobId ===
+                                    job.id
+                                    ? null
+                                    : job.id
+                                );
+
+                                setReturnJobId(
+                                  null
+                                );
+
+                                setTransferTargetId(
+                                  ""
+                                );
+
+                                setTransferReason(
+                                  ""
+                                );
+                              }}
+                            >
+                              <ArrowRightLeft
+                                size={13}
+                              />
+                              Request Transfer
+                            </button>
+                          )}
                         </div>
-                      )}
+                      </div>
 
                       {/* DIAGNOSIS FORM */}
 
@@ -3456,88 +3538,6 @@ const TechnicianPanel = () => {
                           </div>
                         </div>
                       )}
-
-                      {/* SECONDARY ACTIONS */}
-
-                      <div
-                        className="tp-job-actions"
-                        style={{
-                          borderTop:
-                            "1px solid #edf1f5",
-                        }}
-                      >
-                        <button
-                          className="tp-action-btn tp-action-soft"
-                          onClick={() => {
-                            setReturnJobId(
-                              returnJobId ===
-                                job.id
-                                ? null
-                                : job.id
-                            );
-
-                            setTransferJobId(
-                              null
-                            );
-                          }}
-                        >
-                          <Undo2
-                            size={13}
-                          />
-                          Return
-                        </button>
-
-                        {transferPending ? (
-                          <button
-                            className="tp-action-btn tp-action-soft"
-                            type="button"
-                            disabled
-                            title={`Waiting for Owner approval to transfer to ${
-                              job
-                                .transferRequest
-                                ?.targetTechnicianName ||
-                              "selected technician"
-                            }`}
-                          >
-                            <Clock3
-                              size={13}
-                            />
-                            Transfer
-                            Pending
-                          </button>
-                        ) : (
-                          <button
-                            className="tp-action-btn tp-action-soft"
-                            type="button"
-                            onClick={() => {
-                              setTransferJobId(
-                                transferJobId ===
-                                  job.id
-                                  ? null
-                                  : job.id
-                              );
-
-                              setReturnJobId(
-                                null
-                              );
-
-                              setTransferTargetId(
-                                ""
-                              );
-
-                              setTransferReason(
-                                ""
-                              );
-                            }}
-                          >
-                            <ArrowRightLeft
-                              size={13}
-                            />
-                            Request
-                            Transfer
-                          </button>
-                        )}
-                      </div>
 
                       {/* RETURN FORM */}
 
@@ -3884,7 +3884,7 @@ const TechnicianPanel = () => {
               </p>
             </div>
           ) : (
-            <div className="tp-jobs-list">
+            <div className="tp-completed-list">
               {completedJobs.map(
                 (job) => (
                   <div
@@ -3893,30 +3893,68 @@ const TechnicianPanel = () => {
                   >
                     <div className="tp-completed-check">
                       <CheckCircle2
-                        size={14}
+                        size={16}
                       />
-
-                      {getDeviceName(
-                        job
-                      )}{" "}
-                      —{" "}
-                      {getCustomerName(
-                        job
-                      )}
+                      <div>
+                        <strong>
+                          {getDeviceName(
+                            job
+                          )}
+                        </strong>
+                        <span
+                          style={{
+                            color:
+                              "#64748b",
+                            margin:
+                              "0 6px",
+                          }}
+                        >
+                          •
+                        </span>
+                        <span>
+                          {getCustomerName(
+                            job
+                          )}
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="tp-completed-time">
-                      <TimerReset
-                        size={12}
-                      />
+                    <div
+                      style={{
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        gap: "10px",
+                        flexWrap:
+                          "wrap",
+                      }}
+                    >
+                      <span
+                        className="tp-job-id"
+                        style={{
+                          fontSize:
+                            "11px",
+                          padding:
+                            "2px 7px",
+                        }}
+                      >
+                        {job.id}
+                      </span>
 
-                      Time taken:{" "}
-
-                      <strong>
-                        {formatSeconds(
-                          job.totalTimeSeconds
-                        )}
-                      </strong>
+                      <div className="tp-completed-time">
+                        <TimerReset
+                          size={13}
+                        />
+                        <span>
+                          Time:
+                        </span>
+                        <strong>
+                          {formatSeconds(
+                            job.totalTimeSeconds
+                          )}
+                        </strong>
+                      </div>
                     </div>
                   </div>
                 )

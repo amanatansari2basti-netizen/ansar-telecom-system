@@ -1647,11 +1647,7 @@ const RepairJobs = () => {
           }
         );
 
-        setIsNewJobOpen(
-          false
-        );
-
-        return true;
+        return nextJobId;
       } catch (
         error
       ) {

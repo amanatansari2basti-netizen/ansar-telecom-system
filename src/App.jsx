@@ -89,6 +89,11 @@ function AppRoutes() {
           element={<Login />}
         />
 
+        <Route
+          path="/create-owner"
+          element={<Navigate to="/login?mode=setup" replace />}
+        />
+
         {/* ==============================
             OWNER
         ============================== */}

@@ -22,9 +22,14 @@ function CinematicIntro({ onComplete }) {
   ===================================================== */
 
   useEffect(() => {
+    // Fallback: If video is missing or taking too long, mark ready so intro still reveals seamlessly
+    const timeout = setTimeout(() => {
+      setVideoReady(true);
+    }, 600);
+
     const video = videoRef.current;
 
-    if (!video) return;
+    if (!video) return () => clearTimeout(timeout);
 
     video.muted = true;
     video.volume = 0.75;
@@ -41,6 +46,7 @@ function CinematicIntro({ onComplete }) {
     };
 
     startVideo();
+    return () => clearTimeout(timeout);
   }, []);
 
   /* =====================================================
@@ -352,10 +358,12 @@ function CinematicIntro({ onComplete }) {
         preload="auto"
         onCanPlay={handleVideoReady}
         onLoadedData={handleVideoReady}
+        onError={handleVideoReady}
       >
         <source
           src="/videos/ansar-intro.mp4"
           type="video/mp4"
+          onError={handleVideoReady}
         />
       </video>
 

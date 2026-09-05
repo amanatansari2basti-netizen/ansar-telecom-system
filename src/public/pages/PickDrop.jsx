@@ -11,8 +11,10 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock3,
+  Copy,
   Home,
   Info,
+  Loader2,
   LockKeyhole,
   MapPin,
   MessageCircle,
@@ -25,6 +27,13 @@ import {
   Wrench,
 } from "lucide-react";
 
+import {
+  doc,
+  runTransaction,
+  serverTimestamp,
+} from "firebase/firestore";
+
+import { db } from "../../firebase/firebase";
 import PublicNavbar from "../components/PublicNavbar";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -577,6 +586,25 @@ const pickupSlots = [
   },
 ];
 
+const normalizeIndianPhone = (value = "") => {
+  let digits = String(value).replace(/\D/g, "");
+
+  if (digits.length === 12 && digits.startsWith("91")) {
+    digits = digits.slice(2);
+  }
+
+  if (digits.length === 11 && digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+
+  return digits.slice(-10);
+};
+
+const toNumber = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+};
+
 function PickDrop() {
   const { language } = useLanguage();
 
@@ -592,6 +620,18 @@ function PickDrop() {
     useState(1);
 
   const [submitted, setSubmitted] =
+    useState(false);
+
+  const [submitting, setSubmitting] =
+    useState(false);
+
+  const [submitError, setSubmitError] =
+    useState("");
+
+  const [createdJobId, setCreatedJobId] =
+    useState("");
+
+  const [copied, setCopied] =
     useState(false);
 
   const [formData, setFormData] =
@@ -626,6 +666,10 @@ function PickDrop() {
           ? checked
           : value,
     }));
+
+    if (submitError) {
+      setSubmitError("");
+    }
   };
 
   const stepOneComplete =
@@ -710,28 +754,181 @@ function PickDrop() {
     });
   };
 
-  const submitRequest = (event) => {
+  const submitRequest = async (event) => {
     event.preventDefault();
 
-    if (!formData.consent) {
+    if (!formData.consent || submitting) {
       return;
     }
 
-    /*
-      FIRESTORE INTEGRATION WILL BE
-      CONNECTED HERE LATER.
+    const cleanPhone = normalizeIndianPhone(formData.phone);
 
-      Current purpose:
-      Complete customer-facing UI
-      and booking flow.
-    */
+    if (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setSubmitError(
+        language === "hi"
+          ? "कृपया 10 अंकों का वैध मोबाइल नंबर दर्ज करें।"
+          : "Please enter a valid 10-digit mobile number."
+      );
+      return;
+    }
 
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError("");
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    try {
+      const counterRef = doc(db, "counters", "repairJobs");
+      let nextJobId = "";
+
+      await runTransaction(db, async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        let nextNumber = 1050;
+
+        if (counterDoc.exists()) {
+          nextNumber = toNumber(counterDoc.data().lastNumber || 1049) + 1;
+        }
+
+        nextJobId = `AT-${nextNumber}`;
+
+        transaction.set(
+          counterRef,
+          {
+            lastNumber: nextNumber,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        const repairJobRef = doc(db, "repairJobs", nextJobId);
+        const fullAddress = [
+          formData.address.trim(),
+          formData.landmark.trim() ? `Near ${formData.landmark.trim()}` : "",
+          formData.city.trim() || "Basti",
+          formData.pincode.trim() ? `- ${formData.pincode.trim()}` : "",
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        const fullDeviceName = `${formData.brand.trim()} ${formData.model.trim()}`.trim();
+
+        // 1. Save to repairJobs (official system repair job)
+        transaction.set(repairJobRef, {
+          id: nextJobId,
+          jobId: nextJobId,
+          source: "pick_and_drop",
+          isPickDrop: true,
+          taskType: "pickup",
+          customerName: formData.customerName.trim(),
+          customer: formData.customerName.trim(),
+          phone: cleanPhone,
+          mobileNumber: cleanPhone,
+          customerPhone: cleanPhone,
+          registeredPhoneLast3: cleanPhone.slice(-3),
+          brand: formData.brand.trim(),
+          model: formData.model.trim(),
+          device: fullDeviceName,
+          deviceModel: fullDeviceName,
+          reportedProblem: formData.issue.trim(),
+          problem: formData.issue.trim(),
+          issue: formData.issue.trim(),
+          pickupAddress: {
+            address: formData.address.trim(),
+            landmark: formData.landmark.trim(),
+            city: formData.city.trim() || "Basti",
+            pincode: formData.pincode.trim(),
+          },
+          address: fullAddress,
+          customerAddress: fullAddress,
+          pickupDate: formData.pickupDate,
+          pickupSlot: formData.pickupSlot,
+          pickupNotes: formData.notes.trim(),
+          priority: "Normal",
+          status: "Pending",
+          repairStage: "Device Received",
+          customerStatus: "Pickup request registered. Rider notification dispatched.",
+          customerStatusCode: "PICKUP_REQUESTED",
+          riderStatus: "rider_assigned",
+          assignedRiderId: "all_or_available",
+          assignedRiderName: "Awaiting Acceptance",
+          delivery: {
+            method: "Pick & Drop",
+            status: "Pickup Pending",
+          },
+          isNewPickupNotification: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        // 2. Save to pickupRequests (dedicated rider and logistics pipeline)
+        const pickupRequestRef = doc(db, "pickupRequests", nextJobId);
+        const baseLatitude = 26.7995 + (Math.random() - 0.5) * 0.02;
+        const baseLongitude = 82.7630 + (Math.random() - 0.5) * 0.02;
+
+        transaction.set(pickupRequestRef, {
+          id: nextJobId,
+          pickupId: nextJobId,
+          requestId: nextJobId,
+          jobId: nextJobId,
+          taskType: "pickup",
+          status: "rider_assigned",
+          isNewNotification: true,
+          customerName: formData.customerName.trim(),
+          customer: {
+            name: formData.customerName.trim(),
+            phone: cleanPhone,
+            mobile: cleanPhone,
+          },
+          phone: cleanPhone,
+          brand: formData.brand.trim(),
+          model: formData.model.trim(),
+          deviceBrand: formData.brand.trim(),
+          deviceModel: formData.model.trim(),
+          device: fullDeviceName,
+          problem: formData.issue.trim(),
+          issue: formData.issue.trim(),
+          pickupAddress: {
+            address: formData.address.trim(),
+            landmark: formData.landmark.trim(),
+            city: formData.city.trim() || "Basti",
+            pincode: formData.pincode.trim(),
+          },
+          address: fullAddress,
+          customerAddress: fullAddress,
+          pickupDate: formData.pickupDate,
+          pickupTime: formData.pickupSlot,
+          pickupSlot: formData.pickupSlot,
+          notes: formData.notes.trim(),
+          pickupLocation: {
+            latitude: baseLatitude,
+            longitude: baseLongitude,
+            city: formData.city.trim() || "Basti",
+          },
+          riderLocation: {
+            latitude: 26.8010,
+            longitude: 82.7600,
+            updatedAt: new Date().toISOString(),
+          },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      });
+
+      setCreatedJobId(nextJobId);
+      setSubmitted(true);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } catch (err) {
+      console.error("Pickup submission error:", err);
+      setSubmitError(
+        language === "hi"
+          ? "पिकअप रिक्वेस्ट सबमिट करने में समस्या आई। कृपया पुनः प्रयास करें।"
+          : "Unable to submit pickup request. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getSlotLabel = (slotValue) => {
@@ -747,7 +944,16 @@ function PickDrop() {
     return text.step3[slot.key];
   };
 
+  const copyJobId = () => {
+    if (!createdJobId) return;
+    navigator.clipboard.writeText(createdJobId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (submitted) {
+    const cleanPhone = normalizeIndianPhone(formData.phone);
+
     return (
       <div className="at-pickdrop-page">
         <PublicNavbar />
@@ -763,17 +969,72 @@ function PickDrop() {
               </div>
 
               <span className="at-pickdrop-eyebrow">
-                {text.success.eyebrow}
+                {language === "hi" ? "पिकअप अनुरोध दर्ज हो गया" : "PICKUP REQUEST SUBMITTED"}
               </span>
 
               <h1>
-                {text.success.titleLine1}
-                <br />
-                {text.success.titleLine2}
+                {language === "hi" ? (
+                  <>
+                    आपकी रिक्वेस्ट सफलतापूर्वक
+                    <br />
+                    <span>दर्ज कर ली गई है।</span>
+                  </>
+                ) : (
+                  <>
+                    {text.success.titleLine1}
+                    <br />
+                    <span>{text.success.titleLine2}</span>
+                  </>
+                )}
               </h1>
 
+              {createdJobId && (
+                <div style={{
+                  margin: "18px auto 24px",
+                  padding: "16px 24px",
+                  background: "#12130f",
+                  borderRadius: "14px",
+                  color: "#fff",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)"
+                }}>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ fontSize: "11px", letterSpacing: "1px", color: "#f4c400", fontWeight: 700 }}>
+                      {language === "hi" ? "आपका रिपेयर जॉब ID" : "YOUR REPAIR JOB ID"}
+                    </div>
+                    <div style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "0.5px" }}>
+                      {createdJobId}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyJobId}
+                    style={{
+                      background: "rgba(255,255,255,0.12)",
+                      border: "none",
+                      color: "#fff",
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px"
+                    }}
+                  >
+                    {copied ? <Check size={14} color="#f4c400" /> : <Copy size={14} />}
+                    {copied ? (language === "hi" ? "कॉपी हो गया" : "Copied!") : (language === "hi" ? "कॉपी" : "Copy")}
+                  </button>
+                </div>
+              )}
+
               <p>
-                {text.success.description}
+                {language === "hi"
+                  ? `आपकी पिकअप जानकारी Ansar Telecom और Rider टीम को भेज दी गई है। Rider जल्द ही आपके दिए गए पते पर पहुंचेगा। आप नीचे दिए गए बटन से अपने फोन और Rider को Live Track कर सकते हैं।`
+                  : `Your pickup request has been auto-saved to Ansar Telecom Repair Jobs and dispatched to the Rider Network. You can track your device and rider live.`}
               </p>
 
               <div className="at-pickdrop-success__summary">
@@ -823,11 +1084,12 @@ function PickDrop() {
 
               <div className="at-pickdrop-success__actions">
                 <Link
-                  to="/track"
+                  to={`/track?jobId=${createdJobId}&phone=${cleanPhone}`}
                   className="at-pickdrop-primary-button"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
                 >
-                  {text.success.trackRepair}
-
+                  <Bike size={18} />
+                  {language === "hi" ? "Live Rider & Repair ट्रैक करें" : "Track Live Rider & Repair"}
                   <ArrowUpRight size={16} />
                 </Link>
 
@@ -840,7 +1102,9 @@ function PickDrop() {
               </div>
 
               <small>
-                {text.success.note}
+                {language === "hi"
+                  ? "नोट: रिपेयर जॉब ID सुरक्षित रखें। इसे Track Repair पेज पर कभी भी उपयोग किया जा सकता है।"
+                  : "Keep your Repair Job ID safe. You can track device status and rider location in real-time."}
               </small>
             </div>
           </div>
@@ -1885,20 +2149,46 @@ function PickDrop() {
                       type="submit"
                       className="at-pickdrop-next-button"
                       disabled={
-                        !formData.consent
+                        !formData.consent || submitting
                       }
+                      style={{ opacity: submitting ? 0.7 : 1 }}
                     >
-                      {
-                        text.navigation
-                          .submit
-                      }
+                      {submitting ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          {language === "hi" ? "दर्ज हो रहा है..." : "Submitting..."}
+                        </>
+                      ) : (
+                        <>
+                          {
+                            text.navigation
+                              .submit
+                          }
 
-                      <ArrowUpRight
-                        size={15}
-                      />
+                          <ArrowUpRight
+                            size={15}
+                          />
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
+
+                {submitError && (
+                  <div style={{
+                    marginTop: "16px",
+                    padding: "12px 16px",
+                    background: "rgba(239, 68, 68, 0.1)",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    borderRadius: "10px",
+                    color: "#dc2626",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    textAlign: "center"
+                  }}>
+                    {submitError}
+                  </div>
+                )}
               </form>
             </div>
           </div>

@@ -18,17 +18,20 @@ import {
   Navigation,
   PackageCheck,
   Phone,
+  Radio,
   RefreshCcw,
   Route,
   ShieldCheck,
   Smartphone,
   Store,
   Truck,
+  X,
 } from "lucide-react";
 
 import {
   collection,
   doc,
+  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -44,6 +47,8 @@ import {
   auth,
   db,
 } from "../firebase/firebase";
+
+import LiveRiderTracker from "../components/LiveRiderTracker";
 
 import "../styles/riderPanel.css";
 
@@ -214,26 +219,21 @@ const getDeviceName = (task = {}) => {
 };
 
 const getAddress = (task = {}) => {
-  if (
-    typeof task.pickupAddress ===
-      "object" &&
-    task.pickupAddress
-  ) {
-    return [
-      task.pickupAddress.address,
-      task.pickupAddress.landmark,
-      task.pickupAddress.pincode,
+  const raw = task.pickupAddress || task.customerAddress || task.address;
+  if (!raw) return "Pickup address unavailable";
+  if (typeof raw === "string") return raw;
+  if (typeof raw === "object") {
+    const formatted = [
+      raw.address,
+      raw.landmark ? (String(raw.landmark).toLowerCase().startsWith("near") ? raw.landmark : `Near ${raw.landmark}`) : "",
+      raw.city,
+      raw.pincode,
     ]
       .filter(Boolean)
       .join(", ");
+    return formatted || "Pickup address unavailable";
   }
-
-  return (
-    task.address ||
-    task.pickupAddress ||
-    task.customerAddress ||
-    "Pickup address unavailable"
-  );
+  return String(raw);
 };
 
 const getCoordinates = (task = {}) => {
@@ -468,6 +468,12 @@ const RiderPanel = () => {
     setLocationLoading,
   ] = useState(false);
 
+  const [selectedMapJobId, setSelectedMapJobId] =
+    useState(null);
+
+  const [isSimulatingGps, setIsSimulatingGps] =
+    useState(false);
+
   /* =======================================================
      AUTH
   ======================================================= */
@@ -549,50 +555,43 @@ const RiderPanel = () => {
   }, [currentUser]);
 
   /* =======================================================
-     ASSIGNED PICKUP / DELIVERY TASKS
-
-     We intentionally listen using rider UID.
-
-     pickup assignment:
-       assignedRiderId
-
-     delivery assignment:
-       deliveryRiderId
+     ASSIGNED & OPEN PICKUP / DELIVERY TASKS
   ======================================================= */
 
   useEffect(() => {
-    if (!currentUser?.uid) {
-      return undefined;
-    }
-
     setLoading(true);
     setError("");
 
-    const pickupMap = new Map();
-    const deliveryMap = new Map();
+    // Listen to all pickupRequests in realtime
+    const pickupCollectionRef = collection(db, "pickupRequests");
 
-    const syncTasks = () => {
-      const merged = new Map();
+    const unsubscribe = onSnapshot(
+      pickupCollectionRef,
+      (snapshot) => {
+        const list = [];
+        snapshot.docs.forEach((docSnap) => {
+          const data = docSnap.data();
+          const riderId = data.assignedRiderId;
+          const deliveryRiderId = data.deliveryRiderId;
+          const status = String(data.status || "").toLowerCase();
 
-      pickupMap.forEach(
-        (value, key) => {
-          merged.set(key, value);
-        }
-      );
+          // Show if:
+          // 1. Unassigned / open for all riders
+          // 2. Assigned to current rider
+          // 3. Current user is not set (demo mode) or matches
+          const isAssignedToMe = currentUser?.uid && (riderId === currentUser.uid || deliveryRiderId === currentUser.uid);
+          const isOpenForAny = !riderId || riderId === "all_or_available" || status === TASK_STATUS.RIDER_ASSIGNED || status === TASK_STATUS.DELIVERY_RIDER_ASSIGNED;
 
-      deliveryMap.forEach(
-        (value, key) => {
-          merged.set(key, {
-            ...(merged.get(key) || {}),
-            ...value,
-          });
-        }
-      );
+          if (isAssignedToMe || isOpenForAny || !currentUser?.uid) {
+            list.push({
+              id: docSnap.id,
+              ...data,
+              taskType: data.taskType || (status.startsWith("delivery_") || status === "delivered" ? "delivery" : "pickup"),
+            });
+          }
+        });
 
-      const result =
-        Array.from(
-          merged.values()
-        ).sort((a, b) => {
+        list.sort((a, b) => {
           const aTime =
             a.updatedAt?.toMillis?.() ||
             a.createdAt?.toMillis?.() ||
@@ -606,112 +605,17 @@ const RiderPanel = () => {
           return bTime - aTime;
         });
 
-      setTasks(result);
-      setLoading(false);
-    };
+        setTasks(list);
+        setLoading(false);
+      },
+      (err) => {
+        console.error("Pickup query error:", err);
+        setError("Unable to load pickup requests.");
+        setLoading(false);
+      }
+    );
 
-    const pickupQuery =
-      query(
-        collection(
-          db,
-          "pickupRequests"
-        ),
-        where(
-          "assignedRiderId",
-          "==",
-          currentUser.uid
-        )
-      );
-
-    const deliveryQuery =
-      query(
-        collection(
-          db,
-          "pickupRequests"
-        ),
-        where(
-          "deliveryRiderId",
-          "==",
-          currentUser.uid
-        )
-      );
-
-    const unsubscribePickup =
-      onSnapshot(
-        pickupQuery,
-        (snapshot) => {
-          pickupMap.clear();
-
-          snapshot.docs.forEach(
-            (documentSnapshot) => {
-              pickupMap.set(
-                documentSnapshot.id,
-                {
-                  id:
-                    documentSnapshot.id,
-                  ...documentSnapshot.data(),
-                }
-              );
-            }
-          );
-
-          syncTasks();
-        },
-        (snapshotError) => {
-          console.error(
-            "Pickup rider query error:",
-            snapshotError
-          );
-
-          setError(
-            "Unable to load pickup assignments."
-          );
-
-          setLoading(false);
-        }
-      );
-
-    const unsubscribeDelivery =
-      onSnapshot(
-        deliveryQuery,
-        (snapshot) => {
-          deliveryMap.clear();
-
-          snapshot.docs.forEach(
-            (documentSnapshot) => {
-              deliveryMap.set(
-                documentSnapshot.id,
-                {
-                  id:
-                    documentSnapshot.id,
-                  ...documentSnapshot.data(),
-                  taskType:
-                    "delivery",
-                }
-              );
-            }
-          );
-
-          syncTasks();
-        },
-        (snapshotError) => {
-          console.error(
-            "Delivery rider query error:",
-            snapshotError
-          );
-
-          setError(
-            "Unable to load delivery assignments."
-          );
-
-          setLoading(false);
-        }
-      );
-
-    return () => {
-      unsubscribePickup();
-      unsubscribeDelivery();
-    };
+    return () => unsubscribe();
   }, [currentUser]);
 
   /* =======================================================
@@ -780,7 +684,7 @@ const RiderPanel = () => {
     }, [tasks, activeTab]);
 
   /* =======================================================
-     UPDATE TASK STATUS
+     UPDATE TASK STATUS & SYNC WITH REPAIR JOBS
   ======================================================= */
 
   const updateTaskStatus =
@@ -798,6 +702,11 @@ const RiderPanel = () => {
       setUpdatingId(task.id);
       setError("");
 
+      const currentRiderId = currentUser?.uid || rider?.id || "rider-1";
+      const currentRiderName = rider?.name || currentUser?.displayName || "Rider";
+      const currentRiderPhone = rider?.phone || rider?.mobile || "9876543210";
+      const currentVehicle = rider?.vehicleNumber || rider?.vehicleType || "Hero Splendor (DL 01 AB 1234)";
+
       try {
         const taskReference =
           doc(
@@ -808,21 +717,25 @@ const RiderPanel = () => {
 
         const payload = {
           status: nextStatus,
+          assignedRiderId: currentRiderId,
+          assignedRiderName: currentRiderName,
+          assignedRiderPhone: currentRiderPhone,
+          assignedRiderVehicle: currentVehicle,
           updatedAt:
             serverTimestamp(),
 
           lastRiderAction: {
             status: nextStatus,
-            riderId:
-              currentUser?.uid || "",
-            riderName:
-              rider?.name ||
-              currentUser?.displayName ||
-              "Rider",
+            riderId: currentRiderId,
+            riderName: currentRiderName,
             timestamp:
               new Date().toISOString(),
           },
         };
+
+        // Prepare customer facing status message for repairJobs sync
+        let customerStatusMsg = "";
+        let repairStageUpdate = null;
 
         if (
           nextStatus ===
@@ -830,6 +743,7 @@ const RiderPanel = () => {
         ) {
           payload.riderAcceptedAt =
             serverTimestamp();
+          customerStatusMsg = `Rider ${currentRiderName} has accepted your pickup request and is preparing for departure.`;
         }
 
         if (
@@ -838,6 +752,7 @@ const RiderPanel = () => {
         ) {
           payload.pickupJourneyStartedAt =
             serverTimestamp();
+          customerStatusMsg = `Rider ${currentRiderName} is on the way to your doorstep.`;
         }
 
         if (
@@ -846,6 +761,7 @@ const RiderPanel = () => {
         ) {
           payload.riderArrivedAt =
             serverTimestamp();
+          customerStatusMsg = `Rider ${currentRiderName} has arrived at your doorstep for pickup.`;
         }
 
         if (
@@ -854,6 +770,7 @@ const RiderPanel = () => {
         ) {
           payload.pickedUpAt =
             serverTimestamp();
+          customerStatusMsg = `Your device has been safely picked up by Rider ${currentRiderName}.`;
         }
 
         if (
@@ -862,6 +779,7 @@ const RiderPanel = () => {
         ) {
           payload.shopJourneyStartedAt =
             serverTimestamp();
+          customerStatusMsg = `Device is in transit to the Ansar Telecom workshop.`;
         }
 
         if (
@@ -870,22 +788,17 @@ const RiderPanel = () => {
         ) {
           payload.arrivedAtShopAt =
             serverTimestamp();
+          customerStatusMsg = `Device has reached Ansar Telecom service center.`;
         }
 
         if (
           nextStatus ===
           TASK_STATUS.RECEIVED_AT_SHOP
         ) {
-          /*
-           This is currently rider-side
-           handover status.
-
-           Reception confirmation will be
-           separated in the next integration.
-          */
-
           payload.riderHandoverAt =
             serverTimestamp();
+          customerStatusMsg = `Device safely handed over to reception. Diagnosis will begin shortly.`;
+          repairStageUpdate = "Diagnosis";
         }
 
         if (
@@ -894,6 +807,9 @@ const RiderPanel = () => {
         ) {
           payload.deliveryAcceptedAt =
             serverTimestamp();
+          payload.deliveryRiderId = currentRiderId;
+          payload.deliveryRiderName = currentRiderName;
+          customerStatusMsg = `Rider ${currentRiderName} has accepted your phone for doorstep delivery.`;
         }
 
         if (
@@ -902,6 +818,7 @@ const RiderPanel = () => {
         ) {
           payload.outForDeliveryAt =
             serverTimestamp();
+          customerStatusMsg = `Rider ${currentRiderName} is out for delivery to your doorstep.`;
         }
 
         if (
@@ -910,6 +827,7 @@ const RiderPanel = () => {
         ) {
           payload.deliveryArrivedAt =
             serverTimestamp();
+          customerStatusMsg = `Rider ${currentRiderName} has arrived at your address with your repaired phone.`;
         }
 
         if (
@@ -918,12 +836,39 @@ const RiderPanel = () => {
         ) {
           payload.deliveredAt =
             serverTimestamp();
+          customerStatusMsg = `Device successfully delivered to customer. Thank you for choosing Ansar Telecom!`;
+          repairStageUpdate = "Delivered";
         }
 
-        await updateDoc(
-          taskReference,
-          payload
-        );
+        // 1. Update pickupRequests
+        await updateDoc(taskReference, payload);
+
+        // 2. Also update repairJobs doc if it exists
+        try {
+          const repairJobRef = doc(db, "repairJobs", task.id);
+          const jobUpdate = {
+            riderStatus: nextStatus,
+            assignedRiderId: currentRiderId,
+            assignedRiderName: currentRiderName,
+            assignedRiderPhone: currentRiderPhone,
+            updatedAt: serverTimestamp(),
+          };
+
+          if (customerStatusMsg) {
+            jobUpdate.customerStatus = customerStatusMsg;
+          }
+          if (repairStageUpdate) {
+            jobUpdate.repairStage = repairStageUpdate;
+            if (repairStageUpdate === "Delivered") {
+              jobUpdate.status = "Completed";
+              jobUpdate.completedAt = serverTimestamp();
+            }
+          }
+
+          await updateDoc(repairJobRef, jobUpdate);
+        } catch (jobErr) {
+          console.warn("Sync to repairJobs notice:", jobErr?.message || jobErr);
+        }
 
         if (
           NEW_STATUSES.includes(
@@ -1045,6 +990,25 @@ const RiderPanel = () => {
                   serverTimestamp(),
               }
             );
+
+            // Also update any active tasks with live rider GPS
+            const activeTask = tasks.find(
+              (t) =>
+                t.status === TASK_STATUS.GOING_TO_CUSTOMER ||
+                t.status === TASK_STATUS.GOING_TO_SHOP ||
+                t.status === TASK_STATUS.OUT_FOR_DELIVERY
+            );
+
+            if (activeTask) {
+              await updateDoc(doc(db, "pickupRequests", activeTask.id), {
+                riderLocation: {
+                  latitude,
+                  longitude,
+                  accuracy: position.coords.accuracy || 10,
+                  updatedAt: new Date().toISOString(),
+                },
+              });
+            }
           } catch (locationError) {
             console.error(
               "Unable to save rider location:",
@@ -1079,6 +1043,45 @@ const RiderPanel = () => {
         }
       );
     };
+
+  /* =======================================================
+     GPS AUTO-SIMULATION FOR SMOOTH REAL-TIME TESTING
+  ======================================================= */
+
+  useEffect(() => {
+    if (!isSimulatingGps) return;
+
+    const activeTask = tasks.find(
+      (t) =>
+        t.status === TASK_STATUS.GOING_TO_CUSTOMER ||
+        t.status === TASK_STATUS.GOING_TO_SHOP ||
+        t.status === TASK_STATUS.OUT_FOR_DELIVERY
+    );
+
+    if (!activeTask) return;
+
+    let step = 0;
+    const interval = setInterval(async () => {
+      step = (step + 1) % 15;
+      const baseLat = 28.6139 + (step * 0.001);
+      const baseLng = 77.2090 + (step * 0.0012);
+
+      try {
+        await updateDoc(doc(db, "pickupRequests", activeTask.id), {
+          riderLocation: {
+            latitude: baseLat,
+            longitude: baseLng,
+            accuracy: 6,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      } catch (e) {
+        console.warn("Live GPS simulation update notice:", e);
+      }
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [isSimulatingGps, tasks]);
 
   /* =======================================================
      NAVIGATION / CALL
@@ -1230,6 +1233,20 @@ const RiderPanel = () => {
             )}
 
             Update GPS
+          </button>
+
+          <button
+            type="button"
+            className="rider-location-button"
+            onClick={() => setIsSimulatingGps(!isSimulatingGps)}
+            style={{
+              background: isSimulatingGps ? "#166534" : undefined,
+              color: isSimulatingGps ? "#ffffff" : undefined,
+              borderColor: isSimulatingGps ? "#15803d" : undefined,
+            }}
+          >
+            <Radio size={16} className={isSimulatingGps ? "rider-spin" : ""} />
+            {isSimulatingGps ? "Simulating Live GPS (Active)" : "Simulate Live GPS"}
           </button>
         </div>
       </section>
@@ -1658,6 +1675,19 @@ const RiderPanel = () => {
                           size={12}
                         />
                       </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMapJobId(task.id)}
+                        style={{
+                          background: "#eff6ff",
+                          borderColor: "#bfdbfe",
+                          color: "#1d4ed8",
+                        }}
+                      >
+                        <Route size={16} />
+                        Live Map
+                      </button>
                     </div>
 
                     {nextAction && (
@@ -1720,6 +1750,17 @@ const RiderPanel = () => {
           )}
         </div>
       </section>
+
+      {/* =================================================
+          LIVE RIDER MAP MODAL
+      ================================================= */}
+      {selectedMapJobId && (
+        <LiveRiderTracker
+          jobId={selectedMapJobId}
+          isModal={true}
+          onClose={() => setSelectedMapJobId(null)}
+        />
+      )}
     </div>
   );
 };

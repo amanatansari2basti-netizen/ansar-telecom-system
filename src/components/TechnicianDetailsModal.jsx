@@ -42,6 +42,7 @@ const TechnicianDetailsModal = ({
   onDeleteTechnician,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 
   const [editData, setEditData] = useState({
     name: "",
@@ -67,6 +68,7 @@ const TechnicianDetailsModal = ({
     });
 
     setIsEditing(false);
+    setIsConfirmingDelete(false);
   }, [technician, isOpen]);
 
   if (!isOpen || !technician) {
@@ -129,19 +131,19 @@ const TechnicianDetailsModal = ({
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    const confirmed =
-      window.confirm(
-        `Delete ${technician.name} from technician staff list?\n\nRepair job history will NOT be deleted.`
-      );
+  const handleTriggerDelete = () => {
+    setIsConfirmingDelete(true);
+  };
 
-    if (!confirmed) {
-      return;
-    }
-
+  const handleConfirmDelete = () => {
+    setIsConfirmingDelete(false);
     onDeleteTechnician?.(
       technician
     );
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmingDelete(false);
   };
 
   const displayStatus =
@@ -848,23 +850,61 @@ const TechnicianDetailsModal = ({
               </strong>
 
               <p>
-                Removes this technician from
-                the staff database. Existing
-                repair-job history will remain
-                safe.
+                {isConfirmingDelete
+                  ? `Are you sure you want to permanently delete ${technician.name || "this technician"} from the staff roster?`
+                  : "Removes this technician from the staff database. Existing repair-job history will remain safe."}
               </p>
             </div>
 
-            <button
-              type="button"
-              className="technician-delete-btn"
-              onClick={
-                handleDelete
-              }
-            >
-              <Trash2 size={15} />
-              Delete Technician
-            </button>
+            {isConfirmingDelete ? (
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <button
+                  type="button"
+                  style={{
+                    backgroundColor: "#dc2626",
+                    color: "#ffffff",
+                    border: "none",
+                    padding: "8px 14px",
+                    borderRadius: "8px",
+                    fontWeight: "700",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                  onClick={handleConfirmDelete}
+                >
+                  <Trash2 size={15} />
+                  Yes, Delete
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    backgroundColor: "#f1f5f9",
+                    color: "#334155",
+                    border: "1px solid #cbd5e1",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    fontWeight: "600",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                  }}
+                  onClick={handleCancelDelete}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="technician-delete-btn"
+                onClick={handleTriggerDelete}
+              >
+                <Trash2 size={15} />
+                Delete Technician
+              </button>
+            )}
 
           </section>
 

@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -25,6 +26,7 @@ import {
 
 import PublicNavbar from "../components/PublicNavbar";
 import CinematicIntro from "../components/CinematicIntro";
+import PickDropFlowAnimation from "../components/PickDropFlowAnimation";
 
 import {
   useLanguage,
@@ -54,11 +56,13 @@ const homeContent = {
       book: "Book Pick & Drop",
       track: "Track repair",
 
-      photoBrand: "ANSAR TELECOM",
-      photoTitle:
-        "Add your real workshop photo here",
-      photoPath:
-        "public/images/ansar-workshop.jpg",
+      photoBrand: "WORKSHOP PHOTO",
+      photoTitle: "Add Workshop Photo",
+      photoPrompt: "Click or drag & drop to upload your workshop photo",
+      photoFormats: "Supports JPG, PNG, WebP",
+      photoBtn: "Add Photo",
+      photoChange: "Change Photo",
+      photoRemove: "Remove",
 
       badgeTitle:
         "Professional Mobile Repair",
@@ -298,14 +302,13 @@ const homeContent = {
       track:
         "रिपेयर ट्रैक करें",
 
-      photoBrand:
-        "ANSAR TELECOM",
-
-      photoTitle:
-        "यहाँ अपनी असली वर्कशॉप की फोटो लगाएँ",
-
-      photoPath:
-        "public/images/ansar-workshop.jpg",
+      photoBrand: "वर्कशॉप फोटो",
+      photoTitle: "वर्कशॉप फोटो जोड़ें",
+      photoPrompt: "वर्कशॉप की फोटो अपलोड करने के लिए क्लिक करें या ड्रैग करें",
+      photoFormats: "JPG, PNG, WebP सपोर्टेड",
+      photoBtn: "फोटो जोड़ें",
+      photoChange: "फोटो बदलें",
+      photoRemove: "हटाएं",
 
       badgeTitle:
         "प्रोफेशनल मोबाइल रिपेयर",
@@ -633,8 +636,6 @@ function PublicHome() {
   const { language } =
     useLanguage();
 
-  const [heroImgError, setHeroImgError] =
-    useState(false);
   const [repairImgError, setRepairImgError] =
     useState(false);
 
@@ -783,43 +784,17 @@ function PublicHome() {
             </div>
 
             <div className="at-home-hero__photo">
-              {!heroImgError ? (
+              <div className="at-custom-photo-wrapper">
                 <img
-                  src="/images/ansar-workshop.jpg"
-                  alt="Ansar Telecom workshop"
+                  src="/images/cracked-phone-repair.jpg"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/images/ansar-workshop.jpg";
+                  }}
+                  alt="Ansar Telecom Workshop"
                   className="at-home-hero__photo-img"
-                  onError={() =>
-                    setHeroImgError(true)
-                  }
                 />
-              ) : (
-              <div className="at-photo-placeholder">
-                <div className="at-photo-placeholder__icon">
-                  <Wrench size={34} />
-                </div>
-
-                <span>
-                  {
-                    content.hero
-                      .photoBrand
-                  }
-                </span>
-
-                <strong>
-                  {
-                    content.hero
-                      .photoTitle
-                  }
-                </strong>
-
-                <small>
-                  {
-                    content.hero
-                      .photoPath
-                  }
-                </small>
               </div>
-              )}
 
               <div className="at-home-hero__photo-badge">
                 <span>
@@ -1279,27 +1254,7 @@ function PublicHome() {
           <div className="at-home-shell">
             <div className="at-home-customer__grid">
               <div className="at-home-customer__visual">
-                <div className="at-photo-placeholder">
-                  <div className="at-photo-placeholder__icon">
-                    <PackageCheck
-                      size={34}
-                    />
-                  </div>
-
-                  <span>
-                    {
-                      content.customer
-                        .photoLabel
-                    }
-                  </span>
-
-                  <strong>
-                    {
-                      content.customer
-                        .photoTitle
-                    }
-                  </strong>
-                </div>
+                <PickDropFlowAnimation language={language} />
               </div>
 
               <div className="at-home-customer__copy">
@@ -1729,16 +1684,9 @@ function PublicHome() {
               }
             </span>
 
-            <Link to="/login">
-              {
-                content.footer
-                  .staff
-              }
-
-              <ArrowUpRight
-                size={13}
-              />
-            </Link>
+            <span className="at-home-footer__credits">
+              Designed And Developed By A² Labs
+            </span>
           </div>
         </div>
       </footer>

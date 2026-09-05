@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import "../settings.css";
 
 import {
+  Bike,
   Building2,
   Clock3,
   Hash,
@@ -23,6 +24,7 @@ import {
 
 import { db, auth } from "../firebase/firebase";
 import AddReceptionistModal from "../components/AddReceptionistModal";
+import AddRiderModal from "../components/AddRiderModal";
 
 const SETTINGS_STORAGE_KEY =
   "ansar_telecom_settings";
@@ -30,9 +32,9 @@ const SETTINGS_STORAGE_KEY =
 const defaultSettings = {
   shopName: "Ansar Telecom",
   ownerName: "Aqib Ansari",
-  phone: "",
-  whatsapp: "",
-  address: "",
+  phone: "9415172051",
+  whatsapp: "9450576786",
+  address: "Beside Sulaxmi Tower, In front Of Ganna Office, District Hospital Road, Basti 272002",
   openingTime: "10:00",
   closingTime: "21:00",
   jobPrefix: "AT",
@@ -75,6 +77,9 @@ const Settings = () => {
     useState(false);
 
   const [isAddReceptionistOpen, setIsAddReceptionistOpen] =
+    useState(false);
+
+  const [isAddRiderOpen, setIsAddRiderOpen] =
     useState(false);
 
   useEffect(() => {
@@ -175,6 +180,82 @@ const Settings = () => {
     } catch (error) {
       console.error("Error creating receptionist account:", error);
       throw new Error(error.message || "Failed to create receptionist account.");
+    }
+  };
+
+  const handleCreateRider = async (riderData) => {
+    const name = String(riderData.name || "").trim();
+    const email = String(riderData.email || "").trim();
+    const password = String(riderData.password || "").trim();
+    const phone = String(riderData.phone || "").trim();
+    const vehicle = String(riderData.vehicle || "").trim();
+    const vehicleNumber = String(riderData.vehicleNumber || "").trim();
+
+    if (!name || !email || !password) {
+      throw new Error("Name, email, and password are required.");
+    }
+
+    try {
+      const { initializeApp, getApps } = await import("firebase/app");
+      const { getAuth, createUserWithEmailAndPassword, signOut } = await import("firebase/auth");
+
+      const currentApp = auth.app;
+      const secondaryAppName = "SecondaryAppForRider";
+
+      let secondaryApp = getApps().find((app) => app.name === secondaryAppName);
+      if (!secondaryApp) {
+        secondaryApp = initializeApp(currentApp.options, secondaryAppName);
+      }
+      const secondaryAuth = getAuth(secondaryApp);
+
+      // 1. Create Firebase Auth account for rider
+      const userCredential = await createUserWithEmailAndPassword(
+        secondaryAuth,
+        email,
+        password
+      );
+      const newUserId = userCredential.user.uid;
+
+      // Logout secondary instance
+      await signOut(secondaryAuth);
+
+      // 2. Save in 'users' collection with role 'rider'
+      await setDoc(doc(db, "users", newUserId), {
+        uid: newUserId,
+        role: "rider",
+        status: "active",
+        name: name,
+        phone: phone,
+        email: email,
+        vehicle: vehicle || "Motorcycle",
+        vehicleNumber: vehicleNumber || "",
+        createdAt: serverTimestamp(),
+      });
+
+      // 3. Save in 'riders' collection for dispatch & tracking
+      await setDoc(doc(db, "riders", newUserId), {
+        id: newUserId,
+        uid: newUserId,
+        name: name,
+        fullName: name,
+        phone: phone,
+        email: email,
+        vehicle: vehicle || "Motorcycle",
+        vehicleNumber: vehicleNumber || "",
+        status: "active",
+        availabilityStatus: "Available",
+        isOnline: false,
+        totalDeliveries: 0,
+        completedDeliveries: 0,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      alert(`Delivery Rider account for "${name}" created successfully!\n\nEmail: ${email}\nPassword: ${password}\n\nRider can now log in at /login`);
+      return true;
+    } catch (error) {
+      console.error("Error creating rider account:", error);
+      throw new Error(error.message || "Failed to create rider account.");
     }
   };
 
@@ -577,19 +658,19 @@ const Settings = () => {
 
         </section>
 
-        {/* --- NAYA SECTION RECEPTIONIST KE LIYE --- */}
+        {/* --- STAFF & FLEET MANAGEMENT SECTION --- */}
         <section className="settings-card">
           <div className="settings-section-heading">
             <div className="settings-section-icon blue">
               <UserPlus size={19} />
             </div>
             <div>
-              <h2>Staff Management</h2>
-              <p>Add receptionist accounts to manage bookings.</p>
+              <h2>Staff & Delivery Fleet Access</h2>
+              <p>Create login credentials for Receptionists and Doorstep Delivery Riders.</p>
             </div>
           </div>
 
-          <div style={{ marginTop: "16px" }}>
+          <div style={{ marginTop: "16px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <button
               type="button"
               className="settings-save-btn"
@@ -604,6 +685,21 @@ const Settings = () => {
               <UserPlus size={17} />
               Create Receptionist Login
             </button>
+
+            <button
+              type="button"
+              className="settings-save-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                backgroundColor: "#16a34a",
+              }}
+              onClick={() => setIsAddRiderOpen(true)}
+            >
+              <Bike size={17} />
+              Create Rider Login Access
+            </button>
           </div>
         </section>
 
@@ -613,6 +709,12 @@ const Settings = () => {
         isOpen={isAddReceptionistOpen}
         onClose={() => setIsAddReceptionistOpen(false)}
         onCreateReceptionist={handleCreateReceptionist}
+      />
+
+      <AddRiderModal
+        isOpen={isAddRiderOpen}
+        onClose={() => setIsAddRiderOpen(false)}
+        onCreateRider={handleCreateRider}
       />
 
     </div>

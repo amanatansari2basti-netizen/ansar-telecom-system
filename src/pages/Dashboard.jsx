@@ -57,6 +57,8 @@ import {
   db,
 } from "../firebase/firebase";
 
+import DailyOperationsHub from "../components/DailyOperationsHub";
+
 import "../dashboard.css";
 
 /* =========================================================
@@ -780,25 +782,17 @@ const Dashboard = () => {
         return;
       }
 
-      if (
-        !shouldOpen
-      ) {
-        const confirmShutdown =
-          window.confirm(
-            "Shut down Ansar Telecom operations now?\n\nTechnicians and Reception will see SHOP CLOSED."
-          );
-
-        if (
-          !confirmShutdown
-        ) {
-          return;
-        }
-      }
-
       try {
         setShopStatusLoading(
           true
         );
+
+        // Optimistically update local shop status
+        setShopStatus((previous) => ({
+          ...previous,
+          isOpen: shouldOpen,
+          status: shouldOpen ? "Open" : "Closed",
+        }));
 
         await setDoc(
           doc(
@@ -822,7 +816,7 @@ const Dashboard = () => {
             updatedBy:
               auth.currentUser
                 ?.uid ||
-              "",
+              "Owner",
 
             updatedByEmail:
               auth.currentUser
@@ -835,10 +829,7 @@ const Dashboard = () => {
           }
         );
       } catch (error) {
-        alert(
-          "Unable to update shop status: " +
-            error.message
-        );
+        console.error("Shop status update error:", error);
       } finally {
         setShopStatusLoading(
           false
@@ -2045,23 +2036,6 @@ const Dashboard = () => {
       selectedStaffId,
     ]);
 
-  useEffect(() => {
-    if (
-      attendanceModalOpen &&
-      !selectedStaffId &&
-      staffMembers.length >
-        0
-    ) {
-      setSelectedStaffId(
-        staffMembers[0].id
-      );
-    }
-  }, [
-    attendanceModalOpen,
-    staffMembers,
-    selectedStaffId,
-  ]);
-
   const selectedStaffAttendance =
     useMemo(() => {
       if (
@@ -2542,6 +2516,18 @@ const Dashboard = () => {
             </button>
           </div>
         </section>
+
+        {/* =================================================
+            DAILY WORKSHOP INTELLIGENCE & CALENDAR TRACKER
+        ================================================= */}
+
+        <DailyOperationsHub
+          jobs={jobs}
+          technicians={technicians}
+          staffMembers={staffMembers}
+          onOpenJob={openRepairJob}
+          formatCurrency={formatCurrency}
+        />
 
         {/* =================================================
             MAIN STATS

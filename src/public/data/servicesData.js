@@ -3,6 +3,8 @@ const servicesData = [
     slug: "iphone-display-line-repair",
     icon: "display",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Advanced Display Repair",
@@ -127,6 +129,8 @@ const servicesData = [
     slug: "samsung-display-line-repair",
     icon: "display",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Advanced Display Repair",
@@ -247,6 +251,7 @@ const servicesData = [
     slug: "motherboard-level-repair",
     icon: "motherboard",
     available: true,
+    image: "/images/repair-work.jpg",
 
     en: {
       category:
@@ -376,6 +381,8 @@ const servicesData = [
     slug: "iphone-samsung-specialist",
     icon: "specialist",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1512499617640-c74ae3a79d37?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category:
@@ -503,6 +510,8 @@ const servicesData = [
     slug: "oca-edge-display-repair",
     icon: "laser",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Display & OCA",
@@ -630,6 +639,8 @@ const servicesData = [
     slug: "laser-display-line-repair",
     icon: "laser",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Laser Repair",
@@ -755,6 +766,8 @@ const servicesData = [
     slug: "iphone-back-glass-laser",
     icon: "backglass",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Laser Repair",
@@ -879,6 +892,8 @@ const servicesData = [
     slug: "iphone-android-displays",
     icon: "display",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category:
@@ -1007,6 +1022,8 @@ const servicesData = [
     slug: "iphone-android-spare-parts",
     icon: "parts",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category:
@@ -1135,6 +1152,8 @@ const servicesData = [
     slug: "iphone-android-batteries",
     icon: "battery",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category:
@@ -1263,6 +1282,8 @@ const servicesData = [
     slug: "professional-mobile-software",
     icon: "software",
     available: true,
+    image:
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category:
@@ -1395,6 +1416,8 @@ const servicesData = [
     slug: "face-id-repair",
     icon: "faceid",
     available: false,
+    image:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Upcoming Service",
@@ -1482,6 +1505,8 @@ const servicesData = [
     slug: "battery-repair",
     icon: "battery",
     available: false,
+    image:
+      "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Upcoming Service",
@@ -1570,6 +1595,8 @@ const servicesData = [
       "display-unknown-part-repair",
     icon: "display",
     available: false,
+    image:
+      "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=1200&q=80",
 
     en: {
       category: "Upcoming Service",
@@ -1666,6 +1693,7 @@ export const getLocalizedServices = (
   servicesData.map((service) => ({
     slug: service.slug,
     icon: service.icon,
+    image: service.image,
     available: service.available,
     ...(service[language] ||
       service.en),
@@ -1688,6 +1716,7 @@ export const getLocalizedService = (
   return {
     slug: service.slug,
     icon: service.icon,
+    image: service.image,
     available:
       service.available,
     ...(service[language] ||

@@ -16,6 +16,8 @@ import {
   X,
 } from "lucide-react";
 
+import ThermalReceiptModal from "./ThermalReceiptModal";
+
 import "../newRepairJobModal.css";
 
 /* =========================================================
@@ -128,6 +130,16 @@ const NewRepairJobModal = ({
     setError,
   ] = useState("");
 
+  const [
+    createdJobForReceipt,
+    setCreatedJobForReceipt,
+  ] = useState(null);
+
+  const [
+    isReceiptOpen,
+    setIsReceiptOpen,
+  ] = useState(false);
+
   /* =========================================================
      RESET
   ========================================================= */
@@ -228,8 +240,25 @@ const NewRepairJobModal = ({
       formData.technicianId,
     ]);
 
-  if (!isOpen) {
+  const handleReceiptClose = () => {
+    setIsReceiptOpen(false);
+    setCreatedJobForReceipt(null);
+    onClose?.();
+  };
+
+  if (!isOpen && !isReceiptOpen) {
     return null;
+  }
+
+  if (isReceiptOpen && createdJobForReceipt) {
+    return (
+      <ThermalReceiptModal
+        isOpen={true}
+        onClose={handleReceiptClose}
+        job={createdJobForReceipt}
+        autoPrint={true}
+      />
+    );
   }
 
   /* =========================================================
@@ -975,11 +1004,24 @@ const NewRepairJobModal = ({
       try {
         setIsSaving(true);
 
+        let createdResultId = null;
         if (onCreateJob) {
-          await onCreateJob(
+          createdResultId = await onCreateJob(
             newJob
           );
         }
+
+        // Prepare job object for instant thermal receipt printing
+        const resolvedId = (typeof createdResultId === "string" && createdResultId.startsWith("AT-"))
+          ? createdResultId
+          : `AT-${Date.now().toString().slice(-4)}`;
+
+        const receiptPayload = {
+          ...newJob,
+          id: resolvedId,
+          jobId: resolvedId,
+          createdAt: new Date(),
+        };
 
         setFormData(
           initialFormData
@@ -993,7 +1035,9 @@ const NewRepairJobModal = ({
 
         setBatteryUsed(false);
 
-        onClose?.();
+        // Set thermal receipt modal to display and auto-print
+        setCreatedJobForReceipt(receiptPayload);
+        setIsReceiptOpen(true);
       } catch (
         submissionError
       ) {
@@ -2260,6 +2304,18 @@ const NewRepairJobModal = ({
         </form>
 
       </div>
+
+      {/* =========================================================
+          THERMAL RECEIPT PRINTING (80mm / 58mm)
+      ========================================================= */}
+      {isReceiptOpen && createdJobForReceipt && (
+        <ThermalReceiptModal
+          isOpen={isReceiptOpen}
+          onClose={handleReceiptClose}
+          job={createdJobForReceipt}
+          autoPrint={true}
+        />
+      )}
     </div>
   );
 };

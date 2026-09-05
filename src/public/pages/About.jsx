@@ -819,11 +819,9 @@ function About() {
               {text.footer.location}
             </span>
 
-            <Link to="/login">
-              {text.footer.staffPortal}
-
-              <ArrowUpRight size={13} />
-            </Link>
+            <span className="at-about-footer__credits">
+              Designed And Developed By A² Labs
+            </span>
           </div>
         </div>
       </footer>
