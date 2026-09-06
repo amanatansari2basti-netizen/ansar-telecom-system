@@ -37,6 +37,7 @@ import PublicSupportWidget from "./public/components/PublicSupportWidget";
 import {
   LanguageProvider,
 } from "./public/context/LanguageContext";
+import { AlertNotificationProvider } from "./context/AlertNotificationContext";
 
 import "./public/styles/publicWebsite.css";
 import "./public/styles/language.css";
@@ -268,7 +269,9 @@ function App() {
   return (
     <LanguageProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <AlertNotificationProvider>
+          <AppRoutes />
+        </AlertNotificationProvider>
       </BrowserRouter>
     </LanguageProvider>
   );

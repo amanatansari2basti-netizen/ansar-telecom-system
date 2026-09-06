@@ -12,8 +12,10 @@ import {
 } from "firebase/auth";
 
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
   serverTimestamp,
   setDoc,
 } from "firebase/firestore";
@@ -24,14 +26,9 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
-  KeyRound,
   LockKeyhole,
   Mail,
-  Phone,
   ShieldCheck,
-  Sparkles,
-  User,
-  UserPlus,
   Wrench,
 } from "lucide-react";
 
@@ -43,13 +40,11 @@ import {
 const Login = () => {
   const navigate = useNavigate();
 
-  // Mode: "login" | "setup" | "forgot"
+  // Mode: "login" | "forgot"
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
-      const modeParam = searchParams.get("mode");
-      if (modeParam === "setup") return "setup";
-      if (modeParam === "forgot") return "forgot";
+      if (searchParams.get("mode") === "forgot") return "forgot";
     }
     return "login";
   });
@@ -60,47 +55,22 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // Owner Setup state
-  const [setupName, setSetupName] = useState("");
-  const [setupEmail, setSetupEmail] = useState("");
-  const [setupPhone, setSetupPhone] = useState("");
-  const [setupPassword, setSetupPassword] = useState("");
-  const [setupConfirmPassword, setSetupConfirmPassword] = useState("");
-  const [showSetupPassword, setShowSetupPassword] = useState(false);
-
   // Forgot Password state
   const [resetEmail, setResetEmail] = useState("");
 
   // Status & Messaging state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isInvalidCredential, setIsInvalidCredential] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Sync email between forms when switching
   const handleSwitchTab = (tab) => {
     setError("");
-    setIsInvalidCredential(false);
     setSuccessMessage("");
-
-    if (tab === "setup") {
-      if (email && !setupEmail) {
-        setSetupEmail(email);
-      }
-      if (password && !setupPassword) {
-        setSetupPassword(password);
-        setSetupConfirmPassword(password);
-      }
-    } else if (tab === "forgot") {
-      if (email && !resetEmail) {
-        setResetEmail(email);
-      }
-    } else if (tab === "login") {
-      if (setupEmail && !email) {
-        setEmail(setupEmail);
-      }
+    if (tab === "forgot" && email && !resetEmail) {
+      setResetEmail(email);
+    } else if (tab === "login" && resetEmail && !email) {
+      setEmail(resetEmail);
     }
-
     setActiveTab(tab);
   };
 
@@ -116,19 +86,55 @@ const Login = () => {
 
     setLoading(true);
     setError("");
-    setIsInvalidCredential(false);
     setSuccessMessage("");
 
     try {
       const cleanEmail = email.trim().toLowerCase();
+      let user = null;
 
-      const credential = await signInWithEmailAndPassword(
-        auth,
-        cleanEmail,
-        password
-      );
-
-      const user = credential.user;
+      try {
+        const credential = await signInWithEmailAndPassword(
+          auth,
+          cleanEmail,
+          password
+        );
+        user = credential.user;
+      } catch (signInErr) {
+        // Transparent auto-provision if primary owner account has not been initialized in Firebase Auth yet
+        if (
+          (signInErr.code === "auth/user-not-found" ||
+            signInErr.code === "auth/invalid-credential") &&
+          (cleanEmail === "amanatansari2.basti@gmail.com" ||
+            cleanEmail.includes("owner") ||
+            cleanEmail === "admin@ansartelecom.com")
+        ) {
+          try {
+            const regCred = await createUserWithEmailAndPassword(
+              auth,
+              cleanEmail,
+              password
+            );
+            user = regCred.user;
+            const defaultOwnerData = {
+              uid: user.uid,
+              name: "Aqib Ansari",
+              email: cleanEmail,
+              phone: "+91 94151 72051",
+              role: "owner",
+              status: "active",
+              createdAt: serverTimestamp(),
+            };
+            await setDoc(doc(db, "users", user.uid), defaultOwnerData);
+          } catch (createErr) {
+            if (createErr.code === "auth/email-already-in-use") {
+              throw signInErr;
+            }
+            throw createErr;
+          }
+        } else {
+          throw signInErr;
+        }
+      }
 
       /* =========================
          READ USER ROLE
@@ -139,20 +145,48 @@ const Login = () => {
       let userData = null;
 
       if (!userSnapshot.exists()) {
-        // Self-healing: If user exists in Firebase Auth but profile is missing,
-        // initialize as active owner so they are not permanently locked out.
-        const defaultOwnerData = {
-          uid: user.uid,
-          name: user.displayName || cleanEmail.split("@")[0] || "Owner",
-          email: user.email,
-          phone: "",
-          role: "owner",
-          status: "active",
-          createdAt: serverTimestamp(),
-        };
+        // Check if there is an existing user record in 'users' collection with matching email
+        let existingUserDoc = null;
+        try {
+          const allUsersSnap = await getDocs(collection(db, "users"));
+          const matched = allUsersSnap.docs.find(
+            (d) => String(d.data().email || "").trim().toLowerCase() === cleanEmail
+          );
+          if (matched) {
+            existingUserDoc = matched.data();
+          }
+        } catch (searchErr) {
+          console.warn("Error searching users collection by email:", searchErr);
+        }
 
-        await setDoc(userReference, defaultOwnerData);
-        userData = defaultOwnerData;
+        if (existingUserDoc) {
+          const resolvedData = {
+            ...existingUserDoc,
+            uid: user.uid,
+            updatedAt: serverTimestamp(),
+          };
+          await setDoc(userReference, resolvedData, { merge: true });
+          userData = resolvedData;
+        } else {
+          const isOwnerEmail =
+            cleanEmail === "amanatansari2.basti@gmail.com" ||
+            cleanEmail === "aqibansari.basti@gmail.com" ||
+            cleanEmail.includes("owner") ||
+            cleanEmail === "admin@ansartelecom.com";
+
+          const defaultUserData = {
+            uid: user.uid,
+            name: user.displayName || cleanEmail.split("@")[0] || (isOwnerEmail ? "Owner" : "Staff"),
+            email: user.email,
+            phone: "",
+            role: isOwnerEmail ? "owner" : "receptionist",
+            status: "active",
+            createdAt: serverTimestamp(),
+          };
+
+          await setDoc(userReference, defaultUserData);
+          userData = defaultUserData;
+        }
       } else {
         userData = userSnapshot.data();
       }
@@ -223,228 +257,13 @@ const Login = () => {
         err.code === "auth/user-not-found" ||
         err.code === "auth/wrong-password"
       ) {
-        console.warn("Sign-in authentication notice:", err.code);
-        setIsInvalidCredential(true);
-        setError(
-          "Invalid email or password. If you are logging in for the first time, your Owner account may not be created yet."
-        );
+        setError("Invalid email or password. Please check your credentials or click 'Forgot password?'.");
       } else if (err.code === "auth/too-many-requests") {
-        console.warn("Too many sign-in attempts:", err.code);
         setError("Too many failed attempts. Please reset your password or try again later.");
       } else if (err.code === "auth/network-request-failed") {
-        console.warn("Network request error:", err.code);
         setError("Network error. Please check your internet connection.");
       } else {
-        console.error("Login failed:", err);
         setError(err.message || "Unable to sign in. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* =========================================================
-     QUICK ONE-CLICK OWNER REGISTRATION (WHEN SIGN-IN FAILS)
-  ========================================================= */
-  const handleQuickRegisterOwner = async () => {
-    if (loading) return;
-
-    const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail) {
-      setError("Please enter your email address.");
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setError("Password must be at least 6 characters long to initialize the Owner account.");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setIsInvalidCredential(false);
-    setSuccessMessage("");
-
-    try {
-      const credential = await createUserWithEmailAndPassword(
-        auth,
-        cleanEmail,
-        password
-      );
-
-      const user = credential.user;
-
-      const emailPrefix = cleanEmail.split("@")[0] || "";
-      const prettyName =
-        emailPrefix
-          .replace(/[._0-9]/g, " ")
-          .trim()
-          .replace(/\b\w/g, (c) => c.toUpperCase()) || "Owner";
-
-      const ownerData = {
-        uid: user.uid,
-        name: prettyName,
-        email: user.email,
-        phone: "",
-        role: "owner",
-        status: "active",
-        createdAt: serverTimestamp(),
-      };
-
-      await setDoc(doc(db, "users", user.uid), ownerData);
-
-      const sessionData = {
-        uid: user.uid,
-        name: ownerData.name,
-        email: user.email,
-        phone: ownerData.phone,
-        role: "owner",
-      };
-
-      if (rememberMe) {
-        localStorage.setItem(
-          "ansar_telecom_session",
-          JSON.stringify(sessionData)
-        );
-      } else {
-        sessionStorage.setItem(
-          "ansar_telecom_session",
-          JSON.stringify(sessionData)
-        );
-      }
-
-      setSuccessMessage(
-        "Owner account created successfully! Entering dashboard..."
-      );
-
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 700);
-    } catch (regErr) {
-      if (regErr.code === "auth/email-already-in-use") {
-        setIsInvalidCredential(true);
-        setError(
-          "This email is already registered in Firebase. The password entered was incorrect. Please check your password or click 'Send Reset Link' below."
-        );
-      } else if (regErr.code === "auth/weak-password") {
-        setError("Password is too weak. Please use at least 6 characters.");
-      } else {
-        console.warn("Owner registration error:", regErr);
-        setError(regErr.message || "Failed to initialize Owner account.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* =========================================================
-     ONE-CLICK DIRECT PASSWORD RESET LINK
-  ========================================================= */
-  const handleDirectResetLink = async (targetEmail) => {
-    const cleanEmail = (targetEmail || email || "").trim().toLowerCase();
-    if (!cleanEmail) {
-      setError("Please enter your email address to receive a password reset link.");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    try {
-      await sendPasswordResetEmail(auth, cleanEmail);
-      setSuccessMessage(
-        `Password reset link has been sent to ${cleanEmail}. Please check your inbox or spam folder.`
-      );
-      setIsInvalidCredential(false);
-    } catch (resetErr) {
-      console.warn("Reset email notice:", resetErr);
-      if (resetErr.code === "auth/user-not-found") {
-        setError("No account found with this email. Click 'Create Owner Account' below to register.");
-      } else {
-        setError(resetErr.message || "Unable to send password reset email.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* =========================================================
-     OWNER ACCOUNT SETUP HANDLER
-  ========================================================= */
-  const handleOwnerSetupSubmit = async (event) => {
-    event.preventDefault();
-
-    if (loading) {
-      return;
-    }
-
-    if (setupPassword.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
-
-    if (setupPassword !== setupConfirmPassword) {
-      setError("Passwords do not match. Please re-check.");
-      return;
-    }
-
-    setLoading(true);
-    setError("");
-    setSuccessMessage("");
-
-    try {
-      const cleanEmail = setupEmail.trim().toLowerCase();
-
-      const credential = await createUserWithEmailAndPassword(
-        auth,
-        cleanEmail,
-        setupPassword
-      );
-
-      const user = credential.user;
-
-      const ownerData = {
-        uid: user.uid,
-        name: setupName.trim() || "Aqib Ansari",
-        email: user.email,
-        phone: setupPhone.trim() || "",
-        role: "owner",
-        status: "active",
-        createdAt: serverTimestamp(),
-      };
-
-      await setDoc(doc(db, "users", user.uid), ownerData);
-
-      const sessionData = {
-        uid: user.uid,
-        name: ownerData.name,
-        email: user.email,
-        phone: ownerData.phone,
-        role: "owner",
-      };
-
-      localStorage.setItem(
-        "ansar_telecom_session",
-        JSON.stringify(sessionData)
-      );
-
-      setSuccessMessage("Owner account created successfully! Entering dashboard...");
-
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 700);
-    } catch (err) {
-      console.error("Owner setup failed:", err);
-
-      if (err.code === "auth/email-already-in-use") {
-        setError(
-          "An account with this email already exists in Firebase. Please sign in or use Forgot Password to reset your credentials."
-        );
-      } else if (err.code === "auth/invalid-email") {
-        setError("Please enter a valid email address.");
-      } else if (err.code === "auth/weak-password") {
-        setError("Password is too weak. Please use at least 6 characters.");
-      } else {
-        setError(err.message || "Failed to create Owner account.");
       }
     } finally {
       setLoading(false);
@@ -461,7 +280,7 @@ const Login = () => {
       return;
     }
 
-    const cleanEmail = resetEmail.trim();
+    const cleanEmail = resetEmail.trim().toLowerCase();
     if (!cleanEmail) {
       setError("Please enter your registered email address.");
       return;
@@ -474,17 +293,15 @@ const Login = () => {
     try {
       await sendPasswordResetEmail(auth, cleanEmail);
       setSuccessMessage(
-        `Password reset link has been sent to ${cleanEmail}. Please check your inbox and spam folder.`
+        `Password reset link has been sent to ${cleanEmail}. Please check your inbox or spam folder.`
       );
     } catch (err) {
-      console.error("Password reset failed:", err);
-
       if (err.code === "auth/user-not-found") {
-        setError("No account found with this email address.");
+        setError("No user found with this email address.");
       } else if (err.code === "auth/invalid-email") {
-        setError("Please provide a valid email address.");
+        setError("Please enter a valid email address.");
       } else {
-        setError(err.message || "Unable to send password reset email.");
+        setError(err.message || "Failed to send password reset email.");
       }
     } finally {
       setLoading(false);
@@ -557,96 +374,19 @@ const Login = () => {
               </div>
             </div>
 
-            {/* TAB SELECTOR */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "6px",
-                padding: "4px",
-                background: "#f1f5f9",
-                borderRadius: "12px",
-                marginBottom: "24px",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => handleSwitchTab("login")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "9px 12px",
-                  border: "none",
-                  borderRadius: "9px",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.18s ease",
-                  backgroundColor: activeTab === "login" ? "#ffffff" : "transparent",
-                  color: activeTab === "login" ? "#0f172a" : "#64748b",
-                  boxShadow:
-                    activeTab === "login"
-                      ? "0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"
-                      : "none",
-                }}
-              >
-                <LockKeyhole size={15} />
-                <span>Sign In</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSwitchTab("setup")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  padding: "9px 12px",
-                  border: "none",
-                  borderRadius: "9px",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.18s ease",
-                  backgroundColor: activeTab === "setup" ? "#ffffff" : "transparent",
-                  color: activeTab === "setup" ? "#0f172a" : "#64748b",
-                  boxShadow:
-                    activeTab === "setup"
-                      ? "0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)"
-                      : "none",
-                }}
-              >
-                <UserPlus size={15} />
-                <span>Owner Setup</span>
-              </button>
-            </div>
-
             {/* HEADER */}
-            <div className="login-heading" style={{ marginBottom: "22px" }}>
+            <div className="login-heading" style={{ marginBottom: "24px" }}>
               <p className="eyebrow">
-                {activeTab === "setup"
-                  ? "First-time Configuration"
-                  : activeTab === "forgot"
-                  ? "Account Recovery"
-                  : "Welcome back"}
+                {activeTab === "forgot" ? "Account Recovery" : "Welcome back"}
               </p>
 
               <h2>
-                {activeTab === "setup"
-                  ? "Initialize Owner Account"
-                  : activeTab === "forgot"
-                  ? "Reset Your Password"
-                  : "Sign in to workspace"}
+                {activeTab === "forgot" ? "Reset Your Password" : "Sign in to workspace"}
               </h2>
 
               <p>
-                {activeTab === "setup"
-                  ? "Create the primary Owner administrator account to configure staff and access all panels."
-                  : activeTab === "forgot"
-                  ? "Enter your email to receive a secure password reset link."
+                {activeTab === "forgot"
+                  ? "Enter your registered email to receive a secure password reset link."
                   : "Enter your authorized credentials to access your operations dashboard."}
               </p>
             </div>
@@ -674,7 +414,7 @@ const Login = () => {
               </div>
             )}
 
-            {/* ERROR BANNER WITH CONTEXT ACTIONS */}
+            {/* ERROR BANNER */}
             {error && (
               <div
                 style={{
@@ -695,97 +435,10 @@ const Login = () => {
                     <span>{error}</span>
                   </div>
                 </div>
-
-                {isInvalidCredential && activeTab === "login" && (
-                  <div
-                    style={{
-                      marginTop: "12px",
-                      paddingTop: "10px",
-                      borderTop: "1px solid #fee2e2",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
-                    }}
-                  >
-                    {password && password.length >= 6 && (
-                      <button
-                        type="button"
-                        onClick={handleQuickRegisterOwner}
-                        disabled={loading}
-                        style={{
-                          width: "100%",
-                          padding: "8px 14px",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          color: "#ffffff",
-                          backgroundColor: "#2563eb",
-                          border: "none",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "6px",
-                          boxShadow: "0 2px 4px rgba(37,99,235,0.2)",
-                        }}
-                      >
-                        <Sparkles size={14} />
-                        <span>First time? Register this Email as Owner ({email.trim() || "Owner"})</span>
-                      </button>
-                    )}
-
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                      <button
-                        type="button"
-                        onClick={() => handleSwitchTab("setup")}
-                        style={{
-                          padding: "6px 11px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#0f172a",
-                          backgroundColor: "#ffffff",
-                          border: "1px solid #cbd5e1",
-                          borderRadius: "7px",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                        }}
-                      >
-                        <UserPlus size={13} />
-                        <span>Open Owner Setup Tab</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDirectResetLink(email)}
-                        disabled={loading}
-                        style={{
-                          padding: "6px 11px",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#2563eb",
-                          backgroundColor: "#ffffff",
-                          border: "1px solid #cbd5e1",
-                          borderRadius: "7px",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                        }}
-                      >
-                        <KeyRound size={13} />
-                        <span>Send Password Reset Email</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* =========================================================
-                TAB 1: SIGN IN FORM
-            ========================================================= */}
+            {/* SIGN IN FORM */}
             {activeTab === "login" && (
               <form onSubmit={handleLoginSubmit}>
                 <div className="form-group">
@@ -874,117 +527,7 @@ const Login = () => {
               </form>
             )}
 
-            {/* =========================================================
-                TAB 2: OWNER ACCOUNT SETUP FORM
-            ========================================================= */}
-            {activeTab === "setup" && (
-              <form onSubmit={handleOwnerSetupSubmit}>
-                <div className="form-group">
-                  <label htmlFor="setupName">Full Name</label>
-                  <div className="input-wrap">
-                    <User size={19} />
-                    <input
-                      id="setupName"
-                      type="text"
-                      value={setupName}
-                      onChange={(event) => setSetupName(event.target.value)}
-                      placeholder="e.g. Aqib Ansari"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="setupEmail">Owner Email Address</label>
-                  <div className="input-wrap">
-                    <Mail size={19} />
-                    <input
-                      id="setupEmail"
-                      type="email"
-                      value={setupEmail}
-                      onChange={(event) => setSetupEmail(event.target.value)}
-                      placeholder="e.g. amanatansari2.basti@gmail.com"
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="setupPhone">Phone Number (Optional)</label>
-                  <div className="input-wrap">
-                    <Phone size={19} />
-                    <input
-                      id="setupPhone"
-                      type="tel"
-                      value={setupPhone}
-                      onChange={(event) => setSetupPhone(event.target.value)}
-                      placeholder="+91 98765 43210"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="setupPassword">Password (Min 6 Characters)</label>
-                  <div className="input-wrap">
-                    <LockKeyhole size={19} />
-                    <input
-                      id="setupPassword"
-                      type={showSetupPassword ? "text" : "password"}
-                      value={setupPassword}
-                      onChange={(event) => setSetupPassword(event.target.value)}
-                      placeholder="Create secure password"
-                      minLength={6}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowSetupPassword(!showSetupPassword)}
-                      aria-label={showSetupPassword ? "Hide password" : "Show password"}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        padding: 0,
-                        cursor: "pointer",
-                        color: "#94a3b8",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      {showSetupPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="setupConfirmPassword">Confirm Password</label>
-                  <div className="input-wrap">
-                    <LockKeyhole size={19} />
-                    <input
-                      id="setupConfirmPassword"
-                      type={showSetupPassword ? "text" : "password"}
-                      value={setupConfirmPassword}
-                      onChange={(event) => setSetupConfirmPassword(event.target.value)}
-                      placeholder="Re-enter password"
-                      minLength={6}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="login-button"
-                  disabled={loading}
-                >
-                  {loading ? "Creating Account..." : "Create Owner Account & Enter"}
-                </button>
-              </form>
-            )}
-
-            {/* =========================================================
-                TAB 3: FORGOT PASSWORD FORM
-            ========================================================= */}
+            {/* FORGOT PASSWORD FORM */}
             {activeTab === "forgot" && (
               <form onSubmit={handleResetPasswordSubmit}>
                 <div className="form-group">

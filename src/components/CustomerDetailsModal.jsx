@@ -1,7 +1,6 @@
 import {
   CalendarDays,
   ChevronRight,
-  IndianRupee,
   Phone,
   Smartphone,
   User,

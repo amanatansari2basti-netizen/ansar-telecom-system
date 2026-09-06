@@ -85,9 +85,8 @@ function PublicNavbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(
-        window.scrollY > 20
-      );
+      const isPast = window.scrollY > 20;
+      setScrolled((prev) => (prev !== isPast ? isPast : prev));
     };
 
     handleScroll();

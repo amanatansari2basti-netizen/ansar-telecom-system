@@ -183,6 +183,13 @@
   padding: 10px 8px;
 }
 
+.thermal-ticket-body.paper-desktop {
+  width: 360px;
+  max-width: 100%;
+  font-size: 12px;
+  padding: 18px 18px;
+}
+
 /* Ticket Content Elements - Compact & Professional */
 .ticket-header-compact {
   text-align: center;
@@ -438,18 +445,41 @@
 
 /* =========================================================
    NATIVE PRINT MEDIA QUERIES
-   Forces thermal printer to ONLY output the ticket cleanly.
+   Forces thermal printer & desktop printer to ONLY output the ticket cleanly.
 ========================================================= */
 @media print {
-  body * {
-    visibility: hidden;
+  /* Hide all main app and modal overlays */
+  body > *:not(#thermal-modal-portal):not(#ansar-receipt-print-frame) {
+    display: none !important;
+  }
+
+  #root,
+  .dashboard-app,
+  .admin-premium-app,
+  .rp-page,
+  .reception-panel,
+  .job-modal-overlay,
+  .details-modal-overlay {
+    display: none !important;
+  }
+
+  #thermal-modal-portal {
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
 
   .thermal-modal-overlay {
     position: static !important;
     background: transparent !important;
     padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
+    overflow: visible !important;
+    backdrop-filter: none !important;
+    zoom: 1 !important;
   }
 
   .thermal-modal-container {
@@ -459,6 +489,9 @@
     max-height: none !important;
     display: block !important;
     border-radius: 0 !important;
+    overflow: visible !important;
+    background: transparent !important;
+    zoom: 1 !important;
   }
 
   .thermal-screen-header,
@@ -469,31 +502,35 @@
   .thermal-preview-canvas {
     background: transparent !important;
     padding: 0 !important;
-    display: block !important;
-  }
-
-  #ansar-thermal-receipt-ticket,
-  #ansar-thermal-receipt-ticket * {
-    visibility: visible !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    overflow: visible !important;
   }
 
   #ansar-thermal-receipt-ticket {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 100% !important;
-    max-width: 78mm !important;
-    padding: 2mm 3mm !important;
-    margin: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    margin: 4mm auto !important;
     box-shadow: none !important;
     border: none !important;
-    font-size: 9pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
     color: #000000 !important;
     background: #ffffff !important;
   }
 
+  #ansar-thermal-receipt-ticket * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   @page {
-    margin: 0;
+    margin: 4mm auto;
     size: auto;
   }
 }

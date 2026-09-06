@@ -854,6 +854,9 @@ function PickDrop() {
             status: "Pickup Pending",
           },
           isNewPickupNotification: true,
+          isCustomerBooking: true,
+          bookingSource: "customer_online",
+          alertTrigger: Date.now(),
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
@@ -871,6 +874,9 @@ function PickDrop() {
           taskType: "pickup",
           status: "rider_assigned",
           isNewNotification: true,
+          isCustomerBooking: true,
+          source: "customer_online",
+          alertTrigger: Date.now(),
           customerName: formData.customerName.trim(),
           customer: {
             name: formData.customerName.trim(),

@@ -1,18 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import QRCode from "qrcode";
 import {
   Printer,
-  QrCode,
-  Smartphone,
   CheckCircle2,
-  AlertCircle,
-  Clock,
-  ShieldCheck,
   X,
   ExternalLink,
   Receipt,
-  Download,
-  Share2,
 } from "lucide-react";
 import "./thermalReceiptModal.css";
 
@@ -89,16 +83,6 @@ const ThermalReceiptModal = ({
   const customerPhone = job?.phone || job?.mobileNumber || job?.customerPhone || "";
   const trackingUrl = `${window.location.origin}/track?jobId=${encodeURIComponent(jobId)}&phone=${encodeURIComponent(customerPhone)}`;
 
-  const customerAddress = (() => {
-    const raw = job?.customerAddress || job?.pickupAddress || job?.address;
-    if (!raw) return "";
-    if (typeof raw === "string") return raw.trim();
-    if (typeof raw === "object") {
-      return [raw.address, raw.landmark ? `Near ${raw.landmark}` : "", raw.city, raw.pincode].filter(Boolean).join(", ");
-    }
-    return String(raw);
-  })();
-
   // Generate crisp QR code on mount/job change
   useEffect(() => {
     if (!isOpen || !jobId) return;
@@ -122,19 +106,295 @@ const ThermalReceiptModal = ({
     );
   }, [isOpen, jobId, trackingUrl]);
 
-  // Handle auto-print trigger
+  const handlePrint = useCallback(() => {
+    const ticketEl = printAreaRef.current;
+    if (!ticketEl) {
+      window.print();
+      return;
+    }
+
+    // Clean up old print frame if still present
+    const oldFrame = document.getElementById("ansar-receipt-print-frame");
+    if (oldFrame) {
+      try {
+        oldFrame.remove();
+      } catch {
+        // ignore
+      }
+    }
+
+    // Create an isolated hidden iframe for clean, unclipped print preview
+    const iframe = document.createElement("iframe");
+    iframe.id = "ansar-receipt-print-frame";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.visibility = "hidden";
+    document.body.appendChild(iframe);
+
+    const is58 = paperWidth === "58mm";
+    const isDesktop = paperWidth === "desktop";
+    const receiptWidth = is58 ? "56mm" : isDesktop ? "86mm" : "76mm";
+    const baseFontSize = is58 ? "10px" : "11.5px";
+
+    const ticketHtml = ticketEl.outerHTML;
+
+    try {
+      const doc = iframe.contentWindow?.document;
+      if (!doc) {
+        window.print();
+        return;
+      }
+
+      doc.open();
+      doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Receipt_${jobId}</title>
+  <style>
+    @page {
+      size: ${is58 ? "58mm auto" : isDesktop ? "auto" : "80mm auto"};
+      margin: ${isDesktop ? "6mm auto" : "3mm 2mm"};
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+    }
+    .thermal-ticket-body {
+      width: ${receiptWidth};
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 6px 6px;
+      font-size: ${baseFontSize};
+      line-height: 1.35;
+      color: #000000 !important;
+      background: #ffffff !important;
+      border: none !important;
+      box-shadow: none !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    .ticket-header-compact {
+      text-align: center;
+      margin-bottom: 3px;
+    }
+    .ticket-brand-name {
+      font-size: ${is58 ? "14px" : "16px"};
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      color: #000000;
+    }
+    .ticket-brand-sub {
+      font-size: ${is58 ? "7.5px" : "8.5px"};
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin: 1px 0 2px 0;
+    }
+    .ticket-brand-contact {
+      font-size: ${is58 ? "7.5px" : "8.5px"};
+      line-height: 1.25;
+      color: #111;
+    }
+    .ticket-line-dashed {
+      border-top: 1px dashed #000000;
+      margin: 5px 0;
+    }
+    .ticket-job-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px 0;
+    }
+    .ticket-job-tag {
+      font-size: ${is58 ? "13px" : "15px"};
+      font-weight: 900;
+      color: #000000;
+    }
+    .ticket-date-tag {
+      font-size: ${is58 ? "8px" : "9px"};
+      font-weight: 700;
+      color: #000000;
+    }
+    .ticket-details-compact {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: ${is58 ? "9px" : "10px"};
+    }
+    .ticket-compact-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      line-height: 1.3;
+    }
+    .tk-lbl {
+      font-weight: 700;
+      min-width: ${is58 ? "48px" : "56px"};
+      flex-shrink: 0;
+      color: #000000;
+    }
+    .tk-val {
+      flex: 1;
+      word-break: break-word;
+      color: #000000;
+    }
+    .font-bold {
+      font-weight: 700;
+    }
+    .ticket-finance-compact {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+      font-size: ${is58 ? "9px" : "10px"};
+    }
+    .ticket-fin-col {
+      display: flex;
+      flex-direction: column;
+    }
+    .fin-lbl {
+      font-size: ${is58 ? "7.5px" : "8.5px"};
+      color: #222;
+      font-weight: 600;
+    }
+    .fin-val {
+      font-weight: 700;
+      font-size: ${is58 ? "9.5px" : "11px"};
+      color: #000000;
+    }
+    .due-col {
+      text-align: right;
+    }
+    .fin-val-due {
+      font-weight: 900;
+      font-size: ${is58 ? "12px" : "13.5px"};
+      color: #000000;
+    }
+    .ticket-qr-terms-flex {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 3px 0;
+    }
+    .ticket-qr-compact-box {
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .ticket-qr-img-compact {
+      width: ${is58 ? "48px" : "58px"};
+      height: ${is58 ? "48px" : "58px"};
+      display: block;
+      border: 1px solid #000;
+      padding: 1px;
+    }
+    .ticket-qr-subtext {
+      font-size: 7px;
+      font-weight: 800;
+      display: block;
+      margin-top: 2px;
+      color: #000;
+    }
+    .ticket-terms-compact {
+      flex: 1;
+      font-size: ${is58 ? "7.5px" : "8px"};
+      line-height: 1.25;
+      color: #000;
+    }
+    .terms-bold {
+      font-weight: 800;
+      margin-bottom: 2px;
+      text-decoration: underline;
+    }
+    .terms-line {
+      margin-bottom: 1px;
+    }
+    .ticket-footer-compact {
+      text-align: center;
+      font-size: ${is58 ? "8px" : "9.5px"};
+      font-weight: 800;
+      margin-top: 3px;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  ${ticketHtml}
+</body>
+</html>`);
+      doc.close();
+
+      const executePrint = () => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (printErr) {
+          console.error("Iframe print error, calling window.print():", printErr);
+          window.print();
+        } finally {
+          setTimeout(() => {
+            if (iframe.parentNode) {
+              iframe.parentNode.removeChild(iframe);
+            }
+          }, 4000);
+        }
+      };
+
+      // Ensure QR image is loaded inside iframe
+      const imgs = doc.getElementsByTagName("img");
+      if (imgs.length > 0) {
+        let loaded = 0;
+        const checkDone = () => {
+          loaded++;
+          if (loaded >= imgs.length) {
+            setTimeout(executePrint, 120);
+          }
+        };
+        for (let i = 0; i < imgs.length; i++) {
+          if (imgs[i].complete) {
+            loaded++;
+          } else {
+            imgs[i].onload = checkDone;
+            imgs[i].onerror = checkDone;
+          }
+        }
+        if (loaded >= imgs.length) {
+          setTimeout(executePrint, 150);
+        }
+      } else {
+        setTimeout(executePrint, 150);
+      }
+    } catch (err) {
+      console.error("Failed to build print iframe:", err);
+      window.print();
+    }
+  }, [jobId, paperWidth]);
+
+  // Handle auto-print trigger once QR code is ready
   useEffect(() => {
-    if (isOpen && autoPrint) {
+    if (isOpen && autoPrint && qrDataUrl) {
       const timer = setTimeout(() => {
         handlePrint();
-      }, 500);
+      }, 450);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, autoPrint]);
-
-  const handlePrint = () => {
-    window.print();
-  };
+  }, [isOpen, autoPrint, qrDataUrl, handlePrint]);
 
   if (!isOpen || !job) return null;
 
@@ -147,7 +407,6 @@ const ThermalReceiptModal = ({
   const imei = job.imei ? `IMEI: ${job.imei}` : "";
   const problem = job.reportedProblem || job.problem || job.issue || "Diagnostic & Repair";
   const condition = job.deviceCondition || "Normal";
-  const conditionNotes = job.conditionNotes || "";
 
   // Accessories list
   const accList = [];
@@ -186,70 +445,79 @@ const ThermalReceiptModal = ({
     job.technicianName ||
     job.technician ||
     job.assignedTechnician ||
-    "Workshop Master Bench";
+    "";
 
-  const priority = job.priority || "Normal";
-
-  return (
-    <div className="thermal-modal-overlay" onMouseDown={onClose}>
-      <div
-        className="thermal-modal-container"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        {/* Top Control Bar (Screen Only) */}
-        <div className="thermal-screen-header">
-          <div className="thermal-header-left">
-            <div className="thermal-icon-badge">
-              <Receipt size={22} className="text-blue-600" />
+  return createPortal(
+    <div id="thermal-modal-portal">
+      <div className="thermal-modal-overlay" onMouseDown={onClose}>
+        <div
+          className="thermal-modal-container"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {/* Top Control Bar (Screen Only) */}
+          <div className="thermal-screen-header">
+            <div className="thermal-header-left">
+              <div className="thermal-icon-badge">
+                <Receipt size={22} className="text-blue-600" />
+              </div>
+              <div>
+                <h3 className="thermal-header-title">Customer Job Receipt</h3>
+                <p className="thermal-header-subtitle">
+                  High-contrast receipt for Epson / Desktop & Thermal POS printers with Live QR Tracker
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="thermal-header-title">Customer Thermal Job Receipt</h3>
-              <p className="thermal-header-subtitle">
-                High-contrast B&W receipt for 58mm/80mm POS thermal printers with Live QR Tracker
-              </p>
-            </div>
-          </div>
 
-          <div className="thermal-header-actions">
-            {/* Paper Size Selector */}
-            <div className="paper-size-toggle">
+            <div className="thermal-header-actions">
+              {/* Paper Size Selector */}
+              <div className="paper-size-toggle">
+                <button
+                  type="button"
+                  className={`paper-btn ${paperWidth === "80mm" ? "active" : ""}`}
+                  onClick={() => setPaperWidth("80mm")}
+                  title="80mm Roll (Thermal POS)"
+                >
+                  80mm POS
+                </button>
+                <button
+                  type="button"
+                  className={`paper-btn ${paperWidth === "58mm" ? "active" : ""}`}
+                  onClick={() => setPaperWidth("58mm")}
+                  title="58mm Mini Roll (Thermal POS)"
+                >
+                  58mm POS
+                </button>
+                <button
+                  type="button"
+                  className={`paper-btn ${paperWidth === "desktop" ? "active" : ""}`}
+                  onClick={() => setPaperWidth("desktop")}
+                  title="Epson L3250 / Inkjet / A4 Desktop Slip"
+                >
+                  A4 / Desktop Slip
+                </button>
+              </div>
+
+              {/* Print Button */}
               <button
                 type="button"
-                className={`paper-btn ${paperWidth === "80mm" ? "active" : ""}`}
-                onClick={() => setPaperWidth("80mm")}
+                className="thermal-action-btn print-primary-btn"
+                onClick={handlePrint}
               >
-                80mm Standard POS
+                <Printer size={18} />
+                Print Receipt
               </button>
+
+              {/* Close Button */}
               <button
                 type="button"
-                className={`paper-btn ${paperWidth === "58mm" ? "active" : ""}`}
-                onClick={() => setPaperWidth("58mm")}
+                className="thermal-close-btn"
+                onClick={onClose}
+                title="Close Receipt"
               >
-                58mm Mini POS
+                <X size={20} />
               </button>
             </div>
-
-            {/* Print Button */}
-            <button
-              type="button"
-              className="thermal-action-btn print-primary-btn"
-              onClick={handlePrint}
-            >
-              <Printer size={18} />
-              Print Receipt (POS)
-            </button>
-
-            {/* Close Button */}
-            <button
-              type="button"
-              className="thermal-close-btn"
-              onClick={onClose}
-              title="Close Receipt"
-            >
-              <X size={20} />
-            </button>
           </div>
-        </div>
 
         {/* Receipt Preview Canvas Area */}
         <div className="thermal-preview-canvas">
@@ -302,6 +570,24 @@ const ThermalReceiptModal = ({
                 <span className="tk-lbl">Problem:</span>
                 <span className="tk-val">{problem}</span>
               </div>
+              {condition && condition !== "Normal" && (
+                <div className="ticket-compact-row">
+                  <span className="tk-lbl">Condition:</span>
+                  <span className="tk-val">{condition}</span>
+                </div>
+              )}
+              {accList.length > 0 && (
+                <div className="ticket-compact-row">
+                  <span className="tk-lbl">Items:</span>
+                  <span className="tk-val">{accList.join(", ")}</span>
+                </div>
+              )}
+              {technicianName && (
+                <div className="ticket-compact-row">
+                  <span className="tk-lbl">Tech:</span>
+                  <span className="tk-val">{technicianName}</span>
+                </div>
+              )}
             </div>
 
             <div className="ticket-line-dashed" />
@@ -383,7 +669,9 @@ const ThermalReceiptModal = ({
         </div>
       </div>
     </div>
-  );
+  </div>,
+  document.body
+);
 };
 
 export default ThermalReceiptModal;

@@ -12,6 +12,7 @@ import {
   Edit3,
   History,
   IndianRupee,
+  LockKeyhole,
   NotebookText,
   PackageCheck,
   Phone,
@@ -38,6 +39,7 @@ import {
 
 import { db } from "../firebase/firebase";
 
+import PatternLock from "./PatternLock";
 import ThermalReceiptModal from "./ThermalReceiptModal";
 
 import "../jobDetailsModal.css";
@@ -1411,6 +1413,12 @@ const JobDetailsModal = ({
           assignedAt:
             serverTimestamp(),
 
+          lastAssignedAt:
+            serverTimestamp(),
+
+          assignmentAlertTrigger:
+            Date.now(),
+
           transferredAt:
             serverTimestamp(),
 
@@ -1599,6 +1607,12 @@ const JobDetailsModal = ({
 
           assignedAt:
             serverTimestamp(),
+
+          lastAssignedAt:
+            serverTimestamp(),
+
+          assignmentAlertTrigger:
+            Date.now(),
 
           transferredAt:
             serverTimestamp(),
@@ -2173,18 +2187,41 @@ const JobDetailsModal = ({
                   </strong>
                 </div>
 
-                <div className="details-info-row">
-                  <span>
-                    Condition
-                  </span>
+                {/* SCREEN LOCK / PASSWORD / PATTERN */}
+                {((job.lockType === "pattern") || (Array.isArray(job.devicePattern) && job.devicePattern.length > 0)) ? (
+                  <div className="details-info-row" style={{ alignItems: "flex-start", paddingTop: "6px" }}>
+                    <span>
+                      <LockKeyhole size={14} style={{ color: "#2563eb" }} />
+                      Pattern Lock
+                    </span>
 
-                  <strong>
-                    {job.condition ||
-                      job.deviceCondition ||
-                      job.conditionNotes ||
-                      "Normal"}
-                  </strong>
-                </div>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                      <PatternLock value={job.devicePattern} readOnly={true} size={145} />
+                    </div>
+                  </div>
+                ) : (job.lockType === "pin" || job.devicePassword) ? (
+                  <div className="details-info-row">
+                    <span>
+                      <LockKeyhole size={14} style={{ color: "#2563eb" }} />
+                      PIN / Password
+                    </span>
+
+                    <strong style={{ color: "#1e293b", fontSize: "14px", letterSpacing: "0.05em" }}>
+                      {job.devicePassword}
+                    </strong>
+                  </div>
+                ) : (
+                  <div className="details-info-row">
+                    <span>
+                      <LockKeyhole size={14} />
+                      Screen Lock
+                    </span>
+
+                    <strong>
+                      {job.lockCode || "No Lock (खुला है)"}
+                    </strong>
+                  </div>
+                )}
               </div>
             </section>
           </div>

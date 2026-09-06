@@ -64,10 +64,14 @@ const AddReceptionistModal = ({
       setFormData(initialFormState);
       onClose();
     } catch (submissionError) {
-      setError(
-        submissionError?.message ||
-          "Unable to create receptionist. Please try again."
-      );
+      const rawMsg = submissionError?.message || "";
+      if (rawMsg.includes("email-already-in-use") || rawMsg.includes("auth/email-already-in-use")) {
+        setError(
+          "Yeh Email pehle se registered hai! Kripya koi doosra alag email address dalein (jaise reception@ansartelecom.com ya staff ka personal email)."
+        );
+      } else {
+        setError(rawMsg || "Unable to create receptionist. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -160,6 +164,9 @@ const AddReceptionistModal = ({
                     required
                   />
                 </div>
+                <span style={{ fontSize: "11px", color: "#64748b", marginTop: "4px", display: "block" }}>
+                  Tip: Receptionist ke liye alag email dalein (Owner email use na karein).
+                </span>
               </div>
 
               <div className="add-technician-field">

@@ -1,4 +1,5 @@
-import React, {
+import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -29,6 +30,7 @@ import {
   CheckCircle2,
   Clock3,
   Coffee,
+  LockKeyhole,
   LogIn,
   LogOut,
   Pause,
@@ -39,10 +41,13 @@ import {
   TimerReset,
   Undo2,
   User,
+  Volume2,
   Wrench,
   X,
 } from "lucide-react";
 
+import PatternLock from "../components/PatternLock";
+import { useAlertNotification } from "../context/AlertNotificationContext";
 import "./technicianPanel.css";
 
 /* =========================================================
@@ -201,6 +206,9 @@ const getProblem = (job) =>
 const TechnicianPanel = () => {
   const currentUser =
     auth.currentUser;
+
+  const { testAlert } =
+    useAlertNotification();
 
   const todayDate =
     getLocalDateKey();
@@ -427,85 +435,61 @@ const TechnicianPanel = () => {
     "Mobile Repair Technician";
 
   /* =========================================================
-     CLOCK
+     CLOCK (Throttled to 10s to prevent constant 1-second re-render thrashing)
   ========================================================= */
 
   useEffect(() => {
-    const interval =
-      setInterval(() => {
-        setNow(Date.now());
-      }, 1000);
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 10000);
 
-    return () =>
-      clearInterval(interval);
+    return () => clearInterval(interval);
   }, []);
-
-  /* =========================================================
-     NOTIFICATION
-  ========================================================= */
-
-  const playNotificationSound =
-    () => {
-      try {
-        const audio =
-          new Audio(
-            "/notification.mp3"
-          );
-
-        audio
-          .play()
-          .catch(() => {});
-      } catch (error) {
-        console.log(
-          "Notification sound:",
-          error
-        );
-      }
-    };
 
   /* =========================================================
      ASSIGNMENT MATCHING
   ========================================================= */
 
-  const isAssignedToMe = (
-    job
-  ) => {
-    if (!currentUser) {
-      return false;
-    }
+  const isAssignedToMe = useCallback(
+    (job) => {
+      if (!currentUser) {
+        return false;
+      }
 
-    const uid =
-      String(
-        currentUser.uid
+      const uid =
+        String(
+          currentUser.uid
+        );
+
+      const ids = [
+        job.technicianId,
+        job.technicianUid,
+        job.assignedTechnicianId,
+        job.assignedToId,
+        job.userId,
+      ]
+        .filter(Boolean)
+        .map(String);
+
+      if (ids.length > 0) {
+        return ids.includes(uid);
+      }
+
+      const names = [
+        job.technician,
+        job.technicianName,
+        job.assignedTo,
+        job.assignedTechnician,
+      ]
+        .filter(Boolean)
+        .map(normalize);
+
+      return names.includes(
+        normalize(technicianName)
       );
-
-    const ids = [
-      job.technicianId,
-      job.technicianUid,
-      job.assignedTechnicianId,
-      job.assignedToId,
-      job.userId,
-    ]
-      .filter(Boolean)
-      .map(String);
-
-    if (ids.length > 0) {
-      return ids.includes(uid);
-    }
-
-    const names = [
-      job.technician,
-      job.technicianName,
-      job.assignedTo,
-      job.assignedTechnician,
-    ]
-      .filter(Boolean)
-      .map(normalize);
-
-    return names.includes(
-      normalize(technicianName)
-    );
-  };
+    },
+    [currentUser, technicianName]
+  );
 
   /* =========================================================
      REPAIR JOBS
@@ -523,46 +507,11 @@ const TechnicianPanel = () => {
       )
     );
 
-    let initialLoad = true;
-
     const unsubscribe =
       onSnapshot(
         jobsQuery,
         (snapshot) => {
           const fetched = [];
-
-          snapshot
-            .docChanges()
-            .forEach((change) => {
-              const data =
-                change.doc.data();
-
-              if (
-                !initialLoad &&
-                (
-                  change.type ===
-                    "added" ||
-                  change.type ===
-                    "modified"
-                ) &&
-                data.status ===
-                  "Pending"
-              ) {
-                const candidate = {
-                  id:
-                    change.doc.id,
-                  ...data,
-                };
-
-                if (
-                  isAssignedToMe(
-                    candidate
-                  )
-                ) {
-                  playNotificationSound();
-                }
-              }
-            });
 
           snapshot.forEach(
             (item) => {
@@ -574,7 +523,6 @@ const TechnicianPanel = () => {
           );
 
           setJobs(fetched);
-          initialLoad = false;
           setLoading(false);
         },
         (error) => {
@@ -653,8 +601,7 @@ const TechnicianPanel = () => {
         });
     }, [
       jobs,
-      currentUser,
-      technicianName,
+      isAssignedToMe,
     ]);
 
   const inProgressJobs =
@@ -2523,20 +2470,44 @@ const TechnicianPanel = () => {
             </h1>
           </div>
 
-          <div
-            className={`tp-duty-pill ${
-              isClockedIn
-                ? "is-on"
-                : "is-off"
-            }`}
-          >
-            <span />
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              type="button"
+              onClick={() => testAlert("job_assigned")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(37, 99, 235, 0.1)",
+                color: "#1d4ed8",
+                border: "1px solid rgba(37, 99, 235, 0.25)",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+              title="Test 5-second full volume alert sound"
+            >
+              <Volume2 size={14} />
+              <span>Test Alert Sound (5s)</span>
+            </button>
 
-            {isClockedIn
-              ? isOnLunch
-                ? "On Break"
-                : "On Duty"
-              : "Off Duty"}
+            <div
+              className={`tp-duty-pill ${
+                isClockedIn
+                  ? "is-on"
+                  : "is-off"
+              }`}
+            >
+              <span />
+
+              {isClockedIn
+                ? isOnLunch
+                  ? "On Break"
+                  : "On Duty"
+                : "Off Duty"}
+            </div>
           </div>
         </div>
 
@@ -2971,6 +2942,112 @@ const TechnicianPanel = () => {
                             )}
                           </strong>
                         </div>
+                      </div>
+
+                      {/* DEVICE SCREEN LOCK / PASSWORD / PATTERN (for Technicians) */}
+                      <div
+                        style={{
+                          margin: "12px 0 8px",
+                          padding: "10px 14px",
+                          backgroundColor: "#f8fafc",
+                          border: "1px solid #e2e8f0",
+                          borderRadius: "12px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            flexWrap: "wrap",
+                            gap: "6px",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              color: "#1e293b",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <LockKeyhole size={14} style={{ color: "#2563eb" }} />
+                            <span>Screen Lock / Phone Password</span>
+                          </span>
+
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: "6px",
+                              backgroundColor:
+                                job.lockType === "pattern" || (Array.isArray(job.devicePattern) && job.devicePattern.length > 0)
+                                  ? "#eff6ff"
+                                  : job.lockType === "pin" || job.devicePassword
+                                  ? "#f0fdf4"
+                                  : "#f1f5f9",
+                              color:
+                                job.lockType === "pattern" || (Array.isArray(job.devicePattern) && job.devicePattern.length > 0)
+                                  ? "#1d4ed8"
+                                  : job.lockType === "pin" || job.devicePassword
+                                  ? "#15803d"
+                                  : "#64748b",
+                            }}
+                          >
+                            {job.lockType === "pattern" || (Array.isArray(job.devicePattern) && job.devicePattern.length > 0)
+                              ? "Pattern Lock"
+                              : job.lockType === "pin" || job.devicePassword
+                              ? "PIN / Password"
+                              : "No Lock (खुला है)"}
+                          </span>
+                        </div>
+
+                        {/* Pattern Display */}
+                        {(job.lockType === "pattern" || (Array.isArray(job.devicePattern) && job.devicePattern.length > 0)) && (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              padding: "6px 0",
+                            }}
+                          >
+                            <PatternLock value={job.devicePattern} readOnly={true} size={150} />
+                          </div>
+                        )}
+
+                        {/* PIN / Password Display */}
+                        {(job.lockType === "pin" || job.devicePassword) && (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                              backgroundColor: "#ffffff",
+                              border: "1px solid #cbd5e1",
+                              padding: "8px 12px",
+                              borderRadius: "8px",
+                            }}
+                          >
+                            <span style={{ fontSize: "12px", color: "#64748b" }}>Password:</span>
+                            <strong style={{ fontSize: "16px", letterSpacing: "0.08em", color: "#0f172a" }}>
+                              {job.devicePassword || job.lockCode}
+                            </strong>
+                          </div>
+                        )}
+
+                        {/* No Lock */}
+                        {job.lockType === "none" && !job.devicePassword && (!job.devicePattern || job.devicePattern.length === 0) && (
+                          <div style={{ fontSize: "12px", color: "#64748b" }}>
+                            ✓ Is phone me koi screen lock nahi hai.
+                          </div>
+                        )}
                       </div>
 
                       {/* TRANSFER STATUS BANNER */}

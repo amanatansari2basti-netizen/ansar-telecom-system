@@ -8,11 +8,11 @@ import {
 import {
   NavLink,
   Outlet,
+  useLocation,
   useNavigate,
 } from "react-router-dom";
 
 import {
-  Activity,
   AlertTriangle,
   BatteryCharging,
   Bell,
@@ -31,6 +31,7 @@ import {
   Smartphone,
   Sparkles,
   Users,
+  Volume2,
   Wrench,
   X,
 } from "lucide-react";
@@ -50,6 +51,8 @@ import {
   auth,
   db,
 } from "../firebase/firebase";
+
+import { useAlertNotification } from "../context/AlertNotificationContext";
 
 import "../dashboard.css";
 
@@ -127,6 +130,7 @@ const menuItems = [
 ];
 
 const AppLayout = () => {
+  const { testAlert } = useAlertNotification();
   const navigate =
     useNavigate();
 
@@ -136,8 +140,27 @@ const AppLayout = () => {
   const notificationRef =
     useRef(null);
 
+  const location =
+    useLocation();
+
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
+
+  // Auto-close sidebar on route change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Close sidebar on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const [settings, setSettings] =
     useState(getSavedSettings);
@@ -600,12 +623,6 @@ const AppLayout = () => {
      BRAND
   ========================================= */
 
-  const shopName =
-    String(
-      settings.shopName ||
-        "Ansar Telecom"
-    ).trim();
-
   const ownerName =
     String(
       settings.ownerName ||
@@ -816,6 +833,7 @@ const AppLayout = () => {
         <button
           type="button"
           className="sidebar-overlay"
+          aria-label="Close navigation sidebar"
           onClick={() =>
             setSidebarOpen(
               false
@@ -1106,9 +1124,32 @@ const AppLayout = () => {
                       </span>
                     </div>
 
-                    <Bell
-                      size={18}
-                    />
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button
+                        type="button"
+                        onClick={() => testAlert("pickup_booked")}
+                        style={{
+                          background: "rgba(37, 99, 235, 0.1)",
+                          color: "#1d4ed8",
+                          border: "1px solid rgba(37, 99, 235, 0.2)",
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                        title="Test 5-second full volume alert sound for new pick and drop"
+                      >
+                        <Volume2 size={13} />
+                        <span>Test Sound (5s)</span>
+                      </button>
+                      <Bell
+                        size={18}
+                      />
+                    </div>
                   </div>
 
                   {notifications.length >

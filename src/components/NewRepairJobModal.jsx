@@ -9,6 +9,7 @@ import {
   CalendarDays,
   IndianRupee,
   Loader2,
+  LockKeyhole,
   PackageCheck,
   Smartphone,
   User,
@@ -16,6 +17,9 @@ import {
   X,
 } from "lucide-react";
 
+import { serverTimestamp } from "firebase/firestore";
+
+import PatternLock from "./PatternLock";
 import ThermalReceiptModal from "./ThermalReceiptModal";
 
 import "../newRepairJobModal.css";
@@ -31,6 +35,10 @@ const initialFormData = {
   brand: "",
   model: "",
   imei: "",
+
+  lockType: "none",
+  devicePassword: "",
+  devicePattern: [],
 
   deviceCondition: "Normal",
   conditionNotes: "",
@@ -640,13 +648,30 @@ const NewRepairJobModal = ({
           formData.imei.trim(),
 
         condition:
-          formData.deviceCondition,
+          formData.deviceCondition || "Normal",
 
         deviceCondition:
-          formData.deviceCondition,
+          formData.deviceCondition || "Normal",
 
         conditionNotes:
-          formData.conditionNotes.trim(),
+          formData.conditionNotes.trim() || "",
+
+        lockType: formData.lockType || "none",
+
+        devicePassword:
+          formData.lockType === "pin" ? formData.devicePassword.trim() : "",
+
+        devicePattern:
+          formData.lockType === "pattern" && Array.isArray(formData.devicePattern)
+            ? formData.devicePattern
+            : [],
+
+        lockCode:
+          formData.lockType === "pattern" && Array.isArray(formData.devicePattern) && formData.devicePattern.length
+            ? `Pattern: ${formData.devicePattern.join("-")}`
+            : formData.lockType === "pin" && formData.devicePassword?.trim()
+            ? `PIN: ${formData.devicePassword.trim()}`
+            : "No Lock",
 
         issue,
 
@@ -709,6 +734,21 @@ const NewRepairJobModal = ({
         assignedToId:
           formData.technicianId ||
           "",
+
+        assignedAt:
+          formData.technicianId
+            ? serverTimestamp()
+            : null,
+
+        lastAssignedAt:
+          formData.technicianId
+            ? serverTimestamp()
+            : null,
+
+        assignmentAlertTrigger:
+          formData.technicianId
+            ? Date.now()
+            : null,
 
         /* =====================================================
            LEGACY INTERNAL STATUS
@@ -1301,72 +1341,239 @@ const NewRepairJobModal = ({
 
               </div>
 
-              <div className="job-field">
-
-                <label>
-                  Device Condition
-                </label>
-
-                <select
-                  name="deviceCondition"
-                  value={
-                    formData.deviceCondition
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  disabled={
-                    isSaving
-                  }
+              {/* DEVICE PASSWORD / SCREEN PATTERN LOCK (स्क्रीन लॉक / पासवर्ड) */}
+              <div
+                className="job-field full"
+                style={{
+                  background: "#f8fafc",
+                  border: "1.5px solid #e2e8f0",
+                  borderRadius: "14px",
+                  padding: "16px",
+                  marginTop: "6px",
+                  marginBottom: "8px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "10px",
+                    marginBottom: "14px",
+                  }}
                 >
-                  <option value="Normal">
-                    Normal
-                  </option>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "#0f172a",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      <LockKeyhole size={16} style={{ color: "#2563eb" }} />
+                      <span>Screen Lock / Password (फोन लॉक / पासवर्ड)</span>
+                    </label>
+                    <span style={{ fontSize: "12px", color: "#64748b" }}>
+                      Customer ka pattern ya PIN yahan lagayein taaki technician device check kar sake
+                    </span>
+                  </div>
 
-                  <option value="Damaged">
-                    Damaged
-                  </option>
+                  {/* Segmented Switch */}
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      backgroundColor: "#e2e8f0",
+                      padding: "3px",
+                      borderRadius: "10px",
+                      gap: "3px",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          lockType: "none",
+                        }))
+                      }
+                      style={{
+                        padding: "6px 11px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        borderRadius: "7px",
+                        border: "none",
+                        cursor: "pointer",
+                        backgroundColor:
+                          formData.lockType === "none"
+                            ? "#ffffff"
+                            : "transparent",
+                        color:
+                          formData.lockType === "none"
+                            ? "#0f172a"
+                            : "#64748b",
+                        boxShadow:
+                          formData.lockType === "none"
+                            ? "0 1px 3px rgba(0,0,0,0.1)"
+                            : "none",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      No Lock (खुला है)
+                    </button>
 
-                  <option value="Dead">
-                    Dead
-                  </option>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          lockType: "pin",
+                        }))
+                      }
+                      style={{
+                        padding: "6px 11px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        borderRadius: "7px",
+                        border: "none",
+                        cursor: "pointer",
+                        backgroundColor:
+                          formData.lockType === "pin"
+                            ? "#ffffff"
+                            : "transparent",
+                        color:
+                          formData.lockType === "pin"
+                            ? "#2563eb"
+                            : "#64748b",
+                        boxShadow:
+                          formData.lockType === "pin"
+                            ? "0 1px 3px rgba(0,0,0,0.1)"
+                            : "none",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      PIN / Password
+                    </button>
 
-                  <option value="Water Damaged">
-                    Water Damaged
-                  </option>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          lockType: "pattern",
+                        }))
+                      }
+                      style={{
+                        padding: "6px 11px",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        borderRadius: "7px",
+                        border: "none",
+                        cursor: "pointer",
+                        backgroundColor:
+                          formData.lockType === "pattern"
+                            ? "#ffffff"
+                            : "transparent",
+                        color:
+                          formData.lockType === "pattern"
+                            ? "#2563eb"
+                            : "#64748b",
+                        boxShadow:
+                          formData.lockType === "pattern"
+                            ? "0 1px 3px rgba(0,0,0,0.1)"
+                            : "none",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      Pattern Lock (पैटर्न)
+                    </button>
+                  </div>
+                </div>
 
-                  <option value="Screen Broken">
-                    Screen Broken
-                  </option>
+                {/* Option 1: PIN / Text */}
+                {formData.lockType === "pin" && (
+                  <div style={{ marginTop: "6px" }}>
+                    <input
+                      type="text"
+                      name="devicePassword"
+                      value={formData.devicePassword || ""}
+                      onChange={handleChange}
+                      placeholder="e.g. 1234, 0000, 2580 ya koi text password"
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        fontSize: "15px",
+                        fontWeight: 600,
+                        borderRadius: "9px",
+                        border: "1.5px solid #cbd5e1",
+                        backgroundColor: "#ffffff",
+                      }}
+                      disabled={isSaving}
+                    />
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        color: "#64748b",
+                        marginTop: "5px",
+                        display: "block",
+                      }}
+                    >
+                      Customer ka PIN ya password enter karein - Technician ko seedha show hoga.
+                    </span>
+                  </div>
+                )}
 
-                  <option value="Body Damaged">
-                    Body Damaged
-                  </option>
-                </select>
+                {/* Option 2: 3x3 Interactive Pattern Lock */}
+                {formData.lockType === "pattern" && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      marginTop: "6px",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "#475569",
+                        marginBottom: "10px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Customer dwara bataye gaye dots ko touch karein ya ungli ghumakar pattern draw karein:
+                    </p>
 
-              </div>
+                    <PatternLock
+                      value={formData.devicePattern || []}
+                      onChange={(newPattern) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          devicePattern: newPattern,
+                        }));
+                      }}
+                    />
+                  </div>
+                )}
 
-              <div className="job-field full">
-
-                <label>
-                  Condition Notes
-                </label>
-
-                <textarea
-                  name="conditionNotes"
-                  rows="2"
-                  value={
-                    formData.conditionNotes
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  placeholder="Scratches, broken glass, missing buttons, dents..."
-                  disabled={
-                    isSaving
-                  }
-                />
-
+                {/* Option 3: No Lock */}
+                {formData.lockType === "none" && (
+                  <div
+                    style={{
+                      padding: "9px 12px",
+                      backgroundColor: "#f1f5f9",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      color: "#64748b",
+                    }}
+                  >
+                    ✓ Is device me koi lock nahi hai (Swipe to open).
+                  </div>
+                )}
               </div>
 
               <div className="job-field full">

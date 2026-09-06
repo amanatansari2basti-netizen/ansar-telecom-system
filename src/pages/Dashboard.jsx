@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -841,7 +842,7 @@ const Dashboard = () => {
      STAFF STATUS
   ======================================================= */
 
-  const getStaffLiveStatus =
+  const getStaffLiveStatus = useCallback(
     (member) => {
       if (!member) {
         return "Off Duty";
@@ -929,7 +930,9 @@ const Dashboard = () => {
         0
         ? "Busy"
         : "Available";
-    };
+    },
+    [todayDate, jobs]
+  );
 
   /* =======================================================
      V2 CUSTOMER APPROVAL — OWNER
@@ -1322,6 +1325,8 @@ const Dashboard = () => {
         assignedTechnicianId: targetUid,
         assignedToId: targetUid,
         assignedAt: serverTimestamp(),
+        lastAssignedAt: serverTimestamp(),
+        assignmentAlertTrigger: Date.now(),
         status: nextStatus,
         repairStage: previousRepairStage,
         "transferRequest.status": "approved",
@@ -1769,7 +1774,7 @@ const Dashboard = () => {
     }, [
       jobs,
       staffMembers,
-      todayDate,
+      getStaffLiveStatus,
     ]);
 
   /* =======================================================
@@ -1884,7 +1889,7 @@ const Dashboard = () => {
     }, [
       technicians,
       jobs,
-      todayDate,
+      getStaffLiveStatus,
     ]);
 
   /* =======================================================

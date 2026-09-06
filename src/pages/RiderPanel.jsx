@@ -25,18 +25,17 @@ import {
   Smartphone,
   Store,
   Truck,
-  X,
+  Volume2,
 } from "lucide-react";
+
+import { useAlertNotification } from "../context/AlertNotificationContext";
 
 import {
   collection,
   doc,
-  getDoc,
   onSnapshot,
-  query,
   serverTimestamp,
   updateDoc,
-  where,
 } from "firebase/firestore";
 
 import {
@@ -437,6 +436,7 @@ const getNextAction = (task = {}) => {
 };
 
 const RiderPanel = () => {
+  const { testAlert } = useAlertNotification();
   const [currentUser, setCurrentUser] =
     useState(null);
 
@@ -1048,17 +1048,15 @@ const RiderPanel = () => {
      GPS AUTO-SIMULATION FOR SMOOTH REAL-TIME TESTING
   ======================================================= */
 
+  const activeGpsTaskId = tasks.find(
+    (t) =>
+      t.status === TASK_STATUS.GOING_TO_CUSTOMER ||
+      t.status === TASK_STATUS.GOING_TO_SHOP ||
+      t.status === TASK_STATUS.OUT_FOR_DELIVERY
+  )?.id;
+
   useEffect(() => {
-    if (!isSimulatingGps) return;
-
-    const activeTask = tasks.find(
-      (t) =>
-        t.status === TASK_STATUS.GOING_TO_CUSTOMER ||
-        t.status === TASK_STATUS.GOING_TO_SHOP ||
-        t.status === TASK_STATUS.OUT_FOR_DELIVERY
-    );
-
-    if (!activeTask) return;
+    if (!isSimulatingGps || !activeGpsTaskId) return undefined;
 
     let step = 0;
     const interval = setInterval(async () => {
@@ -1067,7 +1065,7 @@ const RiderPanel = () => {
       const baseLng = 77.2090 + (step * 0.0012);
 
       try {
-        await updateDoc(doc(db, "pickupRequests", activeTask.id), {
+        await updateDoc(doc(db, "pickupRequests", activeGpsTaskId), {
           riderLocation: {
             latitude: baseLat,
             longitude: baseLng,
@@ -1081,7 +1079,7 @@ const RiderPanel = () => {
     }, 3500);
 
     return () => clearInterval(interval);
-  }, [isSimulatingGps, tasks]);
+  }, [isSimulatingGps, activeGpsTaskId]);
 
   /* =======================================================
      NAVIGATION / CALL
@@ -1109,15 +1107,9 @@ const RiderPanel = () => {
     const address =
       getAddress(task);
 
-    let destination = "";
-
-    if (coordinates) {
-      destination =
-        `${coordinates.latitude},${coordinates.longitude}`;
-    } else {
-      destination =
-        address;
-    }
+    const destination = coordinates
+      ? `${coordinates.latitude},${coordinates.longitude}`
+      : address;
 
     const url =
       `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -1195,6 +1187,28 @@ const RiderPanel = () => {
         </div>
 
         <div className="rider-hero__actions">
+          <button
+            type="button"
+            onClick={() => testAlert("pickup_booked")}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "rgba(249, 115, 22, 0.15)",
+              color: "#ea580c",
+              border: "1px solid rgba(249, 115, 22, 0.3)",
+              padding: "10px 14px",
+              borderRadius: "10px",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+            title="Test 5-second full volume alert sound for new pick and drop"
+          >
+            <Volume2 size={16} />
+            <span>Test Alert (5s)</span>
+          </button>
+
           <button
             type="button"
             className={

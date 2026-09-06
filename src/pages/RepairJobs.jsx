@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -28,9 +29,7 @@ import {
   ChevronDown,
   RotateCcw,
   PauseCircle,
-  Activity,
   AlertCircle,
-  CheckCircle2,
   PackageCheck,
   TestTube2,
   ArrowRightLeft,
@@ -342,7 +341,7 @@ const RepairJobs = () => {
   ] = useState(true);
 
   const [
-    loadingTechnicians,
+    _loadingTechnicians,
     setLoadingTechnicians,
   ] = useState(true);
 
@@ -722,13 +721,15 @@ const RepairJobs = () => {
           0
       );
 
-  const getBalance =
+  const getBalance = useCallback(
     (job) =>
       Math.max(
         getAmount(job) -
           getAdvance(job),
         0
-      );
+      ),
+    []
+  );
 
   const getPayment =
     (job) => {
@@ -862,7 +863,7 @@ const RepairJobs = () => {
      TECHNICIAN JOB MATCH
   ======================================================= */
 
-  const isJobAssignedToTechnician =
+  const isJobAssignedToTechnician = useCallback(
     (
       job,
       technician
@@ -932,20 +933,18 @@ const RepairJobs = () => {
           techName
         )
       );
-    };
+    },
+    []
+  );
 
   /* =======================================================
      TECHNICIAN QUEUE
   ======================================================= */
 
-  const getTechnicianQueue =
-    (
-      technician
-    ) => {
+  const getTechnicianQueue = useCallback(
+    (technician) => {
       return jobs.filter(
-        (
-          job
-        ) =>
+        (job) =>
           isJobAssignedToTechnician(
             job,
             technician
@@ -959,7 +958,9 @@ const RepairJobs = () => {
             job.status
           )
       );
-    };
+    },
+    [jobs, isJobAssignedToTechnician]
+  );
 
   /* =======================================================
      ASSIGNABLE TECHNICIANS
@@ -1072,7 +1073,7 @@ const RepairJobs = () => {
         );
     }, [
       technicians,
-      jobs,
+      getTechnicianQueue,
     ]);
 
   /* =======================================================
@@ -1736,8 +1737,8 @@ const RepairJobs = () => {
           );
 
         const {
-          id,
-          createdAt,
+          id: _id,
+          createdAt: _createdAt,
           ...safeUpdate
         } =
           updatedJob;
@@ -1967,6 +1968,7 @@ const RepairJobs = () => {
       };
     }, [
       jobs,
+      getBalance,
     ]);
 
   /* =======================================================

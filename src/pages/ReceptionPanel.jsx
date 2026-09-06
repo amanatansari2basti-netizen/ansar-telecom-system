@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   arrayUnion,
@@ -27,7 +27,6 @@ import {
   Check,
   CheckCircle2,
   CircleDot,
-  Clock3,
   Copy,
   Edit3,
   ExternalLink,
@@ -35,10 +34,8 @@ import {
   IndianRupee,
   MapPin,
   MessageCircle,
-  Navigation,
   PackageCheck,
   PauseCircle,
-  Phone,
   PhoneCall,
   Plus,
   Printer,
@@ -54,12 +51,13 @@ import {
   Truck,
   UserRoundCheck,
   UserRoundCog,
-  Users,
+  Volume2,
   Wrench,
   X,
   XCircle,
 } from "lucide-react";
 
+import { useAlertNotification } from "../context/AlertNotificationContext";
 import "./receptionPanel.css";
 
 /* =========================================================
@@ -234,10 +232,52 @@ const getRepairStage = (job) => {
 };
 
 /* =========================================================
+   TECHNICIAN HELPERS
+========================================================= */
+
+const getTechName = (tech) =>
+  tech?.name ||
+  tech?.fullName ||
+  tech?.technicianName ||
+  "Technician";
+
+const isJobAssignedToTech = (job, tech) => {
+  const techId = String(tech?.id || "");
+
+  const jobIds = [
+    job?.technicianId,
+    job?.technicianUid,
+    job?.assignedTechnicianId,
+    job?.assignedToId,
+    job?.userId,
+  ]
+    .filter(Boolean)
+    .map(String);
+
+  if (jobIds.length > 0) {
+    return jobIds.includes(techId);
+  }
+
+  const techName = normalizeText(getTechName(tech));
+
+  const names = [
+    job?.technician,
+    job?.technicianName,
+    job?.assignedTechnician,
+    job?.assignedTo,
+  ]
+    .filter(Boolean)
+    .map(normalizeText);
+
+  return names.includes(techName);
+};
+
+/* =========================================================
    RECEPTION PANEL
 ========================================================= */
 
 const ReceptionPanel = () => {
+  const { testAlert } = useAlertNotification();
   const [jobs, setJobs] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [riders, setRiders] = useState([]);
@@ -496,6 +536,8 @@ const ReceptionPanel = () => {
         assignedTechnicianId: assignedUid,
         assignedToId: assignedUid,
         assignedAt: assignedUid ? serverTimestamp() : null,
+        lastAssignedAt: assignedUid ? serverTimestamp() : null,
+        assignmentAlertTrigger: assignedUid ? Date.now() : null,
         updatedAt: serverTimestamp(),
       };
 
@@ -520,7 +562,9 @@ const ReceptionPanel = () => {
           technicianName: techName,
           updatedAt: serverTimestamp(),
         });
-      } catch (_) {}
+      } catch (e) {
+        console.debug("Pickup request sync skipped:", e);
+      }
 
       setAssignTechJob(null);
       setSelectedTechForAssign("");
@@ -690,7 +734,9 @@ const ReceptionPanel = () => {
           },
           { merge: true }
         );
-      } catch (_) {}
+      } catch (e) {
+        console.debug("Pickup request sync on edit skipped:", e);
+      }
 
       setEditingJob(null);
     } catch (err) {
@@ -740,47 +786,6 @@ const ReceptionPanel = () => {
       setCopiedLinkToast(true);
       setTimeout(() => setCopiedLinkToast(false), 3000);
     }
-  };
-
-  /* =========================================================
-     TECHNICIAN HELPERS
-  ========================================================= */
-
-  const getTechName = (tech) =>
-    tech?.name ||
-    tech?.fullName ||
-    tech?.technicianName ||
-    "Technician";
-
-  const isJobAssignedToTech = (job, tech) => {
-    const techId = String(tech?.id || "");
-
-    const jobIds = [
-      job?.technicianId,
-      job?.technicianUid,
-      job?.assignedTechnicianId,
-      job?.assignedToId,
-      job?.userId,
-    ]
-      .filter(Boolean)
-      .map(String);
-
-    if (jobIds.length > 0) {
-      return jobIds.includes(techId);
-    }
-
-    const techName = normalizeText(getTechName(tech));
-
-    const names = [
-      job?.technician,
-      job?.technicianName,
-      job?.assignedTechnician,
-      job?.assignedTo,
-    ]
-      .filter(Boolean)
-      .map(normalizeText);
-
-    return names.includes(techName);
   };
 
   const enrichedTechnicians = useMemo(() => {
@@ -901,6 +906,12 @@ const ReceptionPanel = () => {
 
           assignedAt: assignedUid
             ? serverTimestamp()
+            : null,
+          lastAssignedAt: assignedUid
+            ? serverTimestamp()
+            : null,
+          assignmentAlertTrigger: assignedUid
+            ? Date.now()
             : null,
 
           startedAt: null,
@@ -1314,6 +1325,8 @@ const ReceptionPanel = () => {
         assignedTechnicianId: targetUid,
         assignedToId: targetUid,
         assignedAt: serverTimestamp(),
+        lastAssignedAt: serverTimestamp(),
+        assignmentAlertTrigger: Date.now(),
         status: nextStatus,
         repairStage: previousRepairStage,
         transferredAt: serverTimestamp(),
@@ -1717,6 +1730,28 @@ const ReceptionPanel = () => {
               >
                 <Plus size={16} />
                 New Repair Job
+              </button>
+
+              <button
+                type="button"
+                onClick={() => testAlert("pickup_booked")}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "rgba(249, 115, 22, 0.12)",
+                  color: "#ea580c",
+                  border: "1px solid rgba(249, 115, 22, 0.3)",
+                  padding: "8px 14px",
+                  borderRadius: "10px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+                title="Test 5-second full volume alert sound for new pick and drop"
+              >
+                <Volume2 size={14} />
+                <span>Test Alert Sound (5s)</span>
               </button>
             </div>
           </div>

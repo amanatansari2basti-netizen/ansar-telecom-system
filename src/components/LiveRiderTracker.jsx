@@ -1,18 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bike,
-  CheckCircle2,
-  Clock,
   Compass,
   MapPin,
-  Navigation,
   Phone,
   Radio,
-  ShieldCheck,
   Smartphone,
-  Truck,
-  User,
-  Wrench,
   X,
 } from "lucide-react";
 
@@ -249,10 +242,7 @@ export default function LiveRiderTracker({
 
   // Map coordinate interpolation for interactive SVG visualization
   // Base bounds: Shop (26.7998, 82.7635) to Customer (~26.8040, 82.7580)
-  const custLat = pickupData?.pickupLocation?.latitude || 26.8045;
-  const custLng = pickupData?.pickupLocation?.longitude || 82.7570;
-
-  // Normalized coordinate mapping to SVG box (width 600, height 320)
+  // Normalized coordinate mapping to SVG box (width 600, height 300)
   const mapWidth = 600;
   const mapHeight = 300;
 
@@ -330,7 +320,7 @@ export default function LiveRiderTracker({
                   fontWeight: 700,
                 }}
               >
-                <Radio size={12} className="animate-pulse" /> LIVE GPS
+                <Radio size={12} className="animate-pulse" /> LIVE GPS ({riderCoords.latitude.toFixed(3)}, {riderCoords.longitude.toFixed(3)})
               </span>
             </div>
             <h3 style={{ margin: "2px 0 0", fontSize: "18px", fontWeight: 700, letterSpacing: "-0.2px" }}>

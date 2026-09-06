@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Calendar,
   ChevronLeft,
@@ -7,25 +7,14 @@ import {
   Wrench,
   PackageCheck,
   CheckCircle2,
-  AlertCircle,
   Smartphone,
   User,
-  Phone,
   IndianRupee,
   Search,
-  Filter,
   ArrowRight,
   Printer,
-  Download,
   ShieldCheck,
-  Sparkles,
-  TrendingUp,
   RotateCcw,
-  Check,
-  UserCheck,
-  Layers,
-  Activity,
-  History,
 } from "lucide-react";
 
 const REPAIR_STAGES = {
@@ -154,7 +143,7 @@ const getRepairStage = (job) => {
 const DailyOperationsHub = ({
   jobs = [],
   technicians = [],
-  staffMembers = [],
+  _staffMembers = [],
   onOpenJob,
   formatCurrency = (val) => `₹${toNumber(val).toLocaleString("en-IN")}`,
 }) => {
@@ -194,12 +183,12 @@ const DailyOperationsHub = ({
   };
 
   // Helper to check if a timestamp matches the selected date
-  const isMatchingSelectedDate = (val) => {
+  const isMatchingSelectedDate = useCallback((val) => {
     if (dateFilterPreset === "all") return true;
     const d = getTimestampDate(val);
     if (!d) return false;
     return getLocalDateKey(d) === selectedDate;
-  };
+  }, [dateFilterPreset, selectedDate]);
 
   // Calculate Daily Metrics based on selectedDate
   const dailyMetrics = useMemo(() => {
@@ -265,7 +254,7 @@ const DailyOperationsHub = ({
       deliveredCount: deliveredJobs.length,
       revenueOnDate,
     };
-  }, [jobs, selectedDate, dateFilterPreset]);
+  }, [jobs, isMatchingSelectedDate, dateFilterPreset]);
 
   // Technician-wise Productivity & Pending Queue Breakdown
   const technicianDailyStats = useMemo(() => {
@@ -343,7 +332,7 @@ const DailyOperationsHub = ({
         totalActiveQueue: pendingCount + inProgressCount,
       };
     });
-  }, [technicians, jobs, selectedDate, dateFilterPreset]);
+  }, [technicians, jobs, isMatchingSelectedDate, dateFilterPreset]);
 
   // Itemized List of Jobs for the selected date
   const filteredDailyJobs = useMemo(() => {
@@ -420,7 +409,7 @@ const DailyOperationsHub = ({
     return result;
   }, [
     jobs,
-    selectedDate,
+    isMatchingSelectedDate,
     dateFilterPreset,
     selectedTechFilter,
     selectedStatusFilter,

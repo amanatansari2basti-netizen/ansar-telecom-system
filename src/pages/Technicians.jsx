@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -1192,7 +1193,7 @@ const Technicians = () => {
      NAME FALLBACK ONLY IF OLD JOB HAS NO UID.
   ========================================================= */
 
-  const getJobsForTechnician =
+  const getJobsForTechnician = useCallback(
     (technician) => {
       const technicianUid =
         String(
@@ -1252,7 +1253,9 @@ const Technicians = () => {
           );
         }
       );
-    };
+    },
+    [jobs]
+  );
 
   /* =========================================================
      CALCULATED TECHNICIANS
@@ -1397,7 +1400,7 @@ const Technicians = () => {
       );
     }, [
       savedTechnicians,
-      jobs,
+      getJobsForTechnician,
     ]);
 
   /* =========================================================

@@ -66,10 +66,14 @@ const AddRiderModal = ({ isOpen, onClose, onCreateRider }) => {
       setFormData(initialFormState);
       onClose();
     } catch (submissionError) {
-      setError(
-        submissionError?.message ||
-          "Unable to create delivery rider. Please try again."
-      );
+      const rawMsg = submissionError?.message || "";
+      if (rawMsg.includes("email-already-in-use") || rawMsg.includes("auth/email-already-in-use")) {
+        setError(
+          "Yeh Email pehle se registered hai! Kripya koi doosra alag email address dalein (jaise rider@ansartelecom.com ya staff ka personal email)."
+        );
+      } else {
+        setError(rawMsg || "Unable to create delivery rider. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
